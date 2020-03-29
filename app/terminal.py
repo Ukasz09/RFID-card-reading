@@ -1,4 +1,4 @@
-class Terminal:
+class Terminal(object):
     def __init__(self, term_id):
         self.term_id = term_id
 
