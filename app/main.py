@@ -1,10 +1,11 @@
 # todo: controller (aktualnie gui dostaje serwer + kllienta)
 
-from app.appLogic import Server
+from app.server import Server
+import time
 
 if __name__ == "__main__":
     server = Server()
-    server.remove_terminal("111190111111")
+    # server.remove_terminal("111190111111")
     # server.add_terminal("1111111222")
     # server.remove_terminal("12211")
     # server.remove_terminal("1")
@@ -22,4 +23,12 @@ if __name__ == "__main__":
     # server.add_card_to_worker("130", "7")
     # server.remove_card_from_worker("12")
     # server.remove_card_from_worker("11")
-
+    # server.register_card_in_system("12", "123414")
+    # server.register_card_in_system("130", "1111111222")
+    # time.sleep(2)
+    # server.register_card_in_system("12", "123414")
+    # time.sleep(1)
+    # server.register_card_in_system("12", "123414")
+    # time.sleep(1)
+    server.register_card_in_system("12", "123414")
+    server.register_card_in_system("949", "123414")

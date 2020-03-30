@@ -1,9 +1,12 @@
 from app.terminal import Terminal
-from app.database_connection.local_using_json import LocalDatabase
+from app.database_connection.local_database import LocalDatabase
 from app.worker import Worker
+from app.registry_log import RegistryLog
+from datetime import datetime
 
 terminal_json = "../data/terminals.json"
 workers_json = "../data/workers.json"
+logs_json = "../data/registrations.json"
 
 
 class DataInputError(BaseException):
@@ -13,9 +16,10 @@ class DataInputError(BaseException):
 
 class Server:
     def __init__(self):
-        self.database = LocalDatabase(terminal_json, workers_json)
+        self.database = LocalDatabase(terminal_json, workers_json, logs_json)
         self.terminals_dict = self.database.read_terminals()
         self.workers_dict = self.database.read_workers()
+        self.logs_dict = self.database.read_logs()
 
     def add_terminal(self, term_id):
         if term_id not in self.terminals_dict:
@@ -49,13 +53,19 @@ class Server:
 
     def add_card_to_worker(self, card_id, worker_id):
         if worker_id in self.workers_dict:
-            for w in self.workers_dict.values():
-                if card_id in w.cards:
-                    raise DataInputError("Card with id: " + card_id + " assigned to worker with id: " + w.worker_id)
+            card_owner = self.get_card_owner(card_id)
+            if card_owner is not None:
+                raise DataInputError("Card with id: " + card_id + "assigned to worker with id: " + card_owner.worker_id)
             self.workers_dict[worker_id].cards.append(card_id)
             self.database.write_workers(self.workers_dict.values())
         else:
             raise DataInputError("Worker with id: " + worker_id + " not exist")
+
+    def get_card_owner(self, card_id):
+        for w in self.workers_dict.values():
+            if card_id in w.cards:
+                return w
+        return None
 
     def remove_card_from_worker(self, card_id):
         for w in self.workers_dict.values():
@@ -64,3 +74,16 @@ class Server:
                 self.database.write_workers(self.workers_dict.values())
                 return None
         raise DataInputError("Card with id: " + card_id + " hasn't been signed to any worker")
+
+    def register_card_in_system(self, card_id, term_id):
+        card_owner = self.get_card_owner(card_id)
+        if card_owner is None:
+            owner_id = None
+        else:
+            owner_id = card_owner.worker_id
+        self.add_log(card_id, term_id, owner_id)
+
+    def add_log(self, card_id, term_id, worker_id):
+        time = datetime.now()
+        self.logs_dict[time] = RegistryLog(time, term_id, card_id, worker_id)
+        self.database.write_logs(self.logs_dict.values())
