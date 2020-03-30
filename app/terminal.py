@@ -4,7 +4,7 @@ class Terminal(object):
 
     # temp - mock to rfid card reading (id given via console)
     def scan_card(self):
-        card_id = input()
+        card_id = input("Temporary mocked - put card id from keyboard or nothing to exit: ")
         return card_id
 
     def __str__(self):

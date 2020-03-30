@@ -76,14 +76,26 @@ class Server:
         raise DataInputError("Card with id: " + card_id + " hasn't been signed to any worker")
 
     def register_card_in_system(self, card_id, term_id):
+        """
+        :return: card owner id or none if card without owner
+        """
         card_owner = self.get_card_owner(card_id)
+        if not self.terminal_in_database(term_id):
+            raise DataInputError("Terminal with id: " + term_id + " not assigned in database")
         if card_owner is None:
             owner_id = None
         else:
             owner_id = card_owner.worker_id
         self.add_log(card_id, term_id, owner_id)
+        return card_owner
+
+    def terminal_in_database(self, term_id):
+        return term_id in self.terminals_dict
 
     def add_log(self, card_id, term_id, worker_id):
         time = datetime.now()
         self.logs_dict[time] = RegistryLog(time, term_id, card_id, worker_id)
         self.database.write_logs(self.logs_dict.values())
+
+    def is_any_terminal_registered(self):
+        return bool(self.terminals_dict)
