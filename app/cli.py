@@ -4,9 +4,18 @@ from collections import namedtuple
 # SERVER
 CHOOSE_MENU_OPTION_MSG = "Choose menu option: "
 UNKNOWN_OPTION_MSG = "Given unknown menu option"
+ADDED_TERMINAL_MSG = "Added terminal to server database"
+ADDED_WORKER_MSG = "Added worker to server database"
+REMOVED_TERMINAL_MSG = "Removed terminal from server database"
+WORKER_NAME_INPUT_MSG = "Enter worker name: "
+WORKER_ID_INPUT_MSG = "Enter worker id: "
+CARD_ID_INPUT_MSG = "Enter card id: "
+REMOVED_WORKER_MSG = "Removed worker from server database"
+REMOVED_CARD_MSG = "Removed card from worker: "
+ADDED_CARD_TO_WORKER_MSG = "Assigned card to worker"
 
 # CLIENT
-TERMINAL_ID_CHOOSE_MSG = "Enter terminal id: "
+TERMINAL_ID_INPUT_MSG = "Enter terminal id: "
 CARD_SCAN_PROMPT_MSG = "Scan your RFID card"
 CARD_SCANNED_PROPERLY_MSG = "Card scanned properly"
 CARD_USAGE_REGISTERED_MSG = "Saved in database usage of RFID card"
@@ -14,7 +23,7 @@ UNKNOWN_CARD_OWNER_MSG = "Card owner unknown"
 CARD_OWNER_IS_KNOWN_MSG = "Card owner: "
 NOT_REGISTERED_ANY_TERMINAL_MSG = "Not found any registered terminal in database. Ask server admin for adding one: "
 NEW_SESSION_SEPARATOR_MSG = "\n___________________________________________________________________________________\n"
-WAIT_WITH_EXIT_MSG = "Press any key to exit"
+WAIT_FOR_INPUT_MSG = "Press any key ..."
 NOT_FOUND_TERMINAL_MSG = "Terminal not assigned in database"
 
 

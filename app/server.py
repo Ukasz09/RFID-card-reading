@@ -42,7 +42,7 @@ class Server:
             self.workers_dict[worker_id] = new_worker
             self.database.write_workers(self.workers_dict.values())
         else:
-            raise DataInputError("Worker with id:" + worker_id + " already exist in database")
+            raise DataInputError("Worker with id: " + worker_id + " already exist in database")
 
     def remove_worker(self, worker_id):
         if worker_id in self.workers_dict:
@@ -55,7 +55,8 @@ class Server:
         if worker_id in self.workers_dict:
             card_owner = self.get_card_owner(card_id)
             if card_owner is not None:
-                raise DataInputError("Card with id: " + card_id + "assigned to worker with id: " + card_owner.worker_id)
+                raise DataInputError(
+                    "Card with id: " + card_id + " already assigned to worker with id: " + card_owner.worker_id)
             self.workers_dict[worker_id].cards.append(card_id)
             self.database.write_workers(self.workers_dict.values())
         else:
@@ -72,7 +73,7 @@ class Server:
             if card_id in w.cards:
                 w.cards.remove(card_id)
                 self.database.write_workers(self.workers_dict.values())
-                return None
+                return w.worker_id
         raise DataInputError("Card with id: " + card_id + " hasn't been signed to any worker")
 
     def register_card_in_system(self, card_id, term_id):
