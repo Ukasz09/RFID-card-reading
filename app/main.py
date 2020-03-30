@@ -1,11 +1,12 @@
-from app.terminal_management import TerminalManagement
-from app.terminal import Terminal
-from app.database_connection.local_using_json import LocalDatabase
+# todo: controller (aktualnie gui dostaje serwer + kllienta)
 
-terminal_json_path = "../data/terminals.json"
+from app.appLogic import Server
 
 if __name__ == "__main__":
-    database = LocalDatabase(terminal_json_path)
-    terminal_management = TerminalManagement(database)
-    terminal_management.add_terminal(Terminal("909090"))
-    print(*terminal_management.get_terminals_list())
+    server = Server()
+    server.add_terminal("1111111111")
+    server.add_terminal("1111111222")
+    server.remove_terminal("1111111111")
+    # server.remove_terminal("1")
+    server.add_worker("Jan", "7")
+    server.add_worker("Ania", "777")
