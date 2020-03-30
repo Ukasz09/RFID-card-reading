@@ -3,9 +3,9 @@ from app.terminal import Terminal
 import app.cli as ui
 
 
-class Client:
+class ClientController:
     def __init__(self):
-        self.server = Server()
+        self.server = ServerController()
         self.terminal = None
 
     def setup(self):
@@ -43,4 +43,33 @@ class Client:
             ui.show_msg(ui.UNKNOWN_CARD_OWNER_MSG)
         else:
             ui.show_msg(ui.CARD_OWNER_IS_KNOWN_MSG + card_owner.worker_id)
+        ui.show_msg(ui.NEW_SESSION_SEPARATOR_MSG)
+
+
+class ServerController:
+    def __init__(self):
+        self.server = Server()
+
+    def run(self):
+        while True:
+            ui.show_server_menu()
+            menu_option = self.get_menu_option()
+            print("temp", menu_option)  # todo
+
+    def get_menu_option(self):
+        user_input = input(ui.CHOOSE_MENU_OPTION_MSG)
+        if not user_input.isdigit():
+            self.show_incorrect_menu_option_msg()
+            self.get_menu_option()
+        menu_option = float(user_input)
+        exit_menu_number = ui.ServerMenu.exit_menu.number
+        if menu_option < 1 or menu_option > exit_menu_number:
+            self.show_incorrect_menu_option_msg()
+            self.get_menu_option()
+        if menu_option == exit_menu_number:
+            exit(0)
+        return menu_option
+
+    def show_incorrect_menu_option_msg(self):
+        ui.show_msg(ui.UNKNOWN_OPTION_MSG)
         ui.show_msg(ui.NEW_SESSION_SEPARATOR_MSG)
