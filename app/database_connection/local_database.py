@@ -1,7 +1,7 @@
 import json
-from app.terminal import Terminal
-from app.worker import Worker
-from app.registry_log import RegistryLog
+from app.logic.terminal import Terminal
+from app.logic.worker import Worker
+from app.logic.registry_log import RegistryLog
 
 
 class LocalDatabase:
@@ -24,7 +24,8 @@ class LocalDatabase:
         f_content = LocalDatabase.__read_data(self.term_path)
         for term_dict in json.loads(f_content):
             term_id = term_dict["term_id"]
-            result_dict[term_id] = Terminal(term_id)
+            term_name = term_dict["name"]
+            result_dict[term_id] = Terminal(term_id, term_name)
         return result_dict
 
     def read_logs(self):
@@ -49,8 +50,9 @@ class LocalDatabase:
         for workers_dict in json.loads(f_content):
             worker_id = workers_dict["worker_id"]
             name = workers_dict["name"]
+            surname = workers_dict["surname"]
             cards = workers_dict["cards"]
-            result_dict[worker_id] = Worker(name, worker_id, cards)
+            result_dict[worker_id] = Worker(name, surname, worker_id, cards)
         return result_dict
 
     def write_terminals(self, objects_arr):

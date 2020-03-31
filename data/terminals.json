@@ -1,11 +1,18 @@
 [
   {
-    "term_id": "123414"
+    "term_id": "123414",
+    "name": "STATION 1"
   },
   {
-    "term_id": "1111111222"
+    "term_id": "1111111222",
+    "name": "Office_control"
   },
   {
-    "term_id": "1"
+    "term_id": "1",
+    "name": "Secretary_Hall_2"
+  },
+  {
+    "term_id": "666",
+    "name": "Angry Scary Hall"
   }
 ]
