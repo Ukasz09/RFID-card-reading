@@ -109,3 +109,40 @@ class Server:
 
     def get_terminals(self):
         return self.__terminals_dict
+
+    def report_log_from_day(self, date=datetime.now().date()):
+        predicate = lambda k: datetime.strptime(k, "%Y-%m-%d %H:%M:%S.%f").date() == date
+        filtered_keys = list(filter(predicate, self.__logs_dict.keys()))
+        filtered_logs = list(map(lambda k: self.__logs_dict[k], filtered_keys))
+        return filtered_logs
+
+    def report_log_from_day_worker(self, worker_id, date=datetime.now().date()):
+        logs_from_day = self.report_log_from_day(date)
+        result_arr = []
+        for log in logs_from_day:
+            if log.worker_id == worker_id:
+                result_arr.append(log)
+        return result_arr
+
+    def report_work_time_from_day_worker(self, worker_id, date=datetime.now().date()):
+        worker_log_for_day = self.report_log_from_day_worker(worker_id, date)
+        work_cycles = []
+        for i in range(0, len(worker_log_for_day) - 1, 2):
+            exit_date_str = worker_log_for_day[i + 1].time
+            exit_date = datetime.strptime(exit_date_str, "%Y-%m-%d %H:%M:%S.%f")
+            enter_date_str = worker_log_for_day[i].time
+            enter_date = datetime.strptime(enter_date_str, "%Y-%m-%d %H:%M:%S.%f")
+            result = exit_date - enter_date
+            work_cycles.append(result)
+        work_time = work_cycles[0]
+        for i in range(1, len(work_cycles)):
+            work_time += work_cycles[i]
+        return work_time
+
+    def report_work_time_from_day(self, date=datetime.now().date()):
+        workers_time_list = []
+        for worker_id in self.__workers_dict.keys():
+            work_time = self.report_work_time_from_day_worker(worker_id, date)
+            if work_time > work_time.min:
+                workers_time_list.append({worker_id: work_time})
+        return workers_time_list
