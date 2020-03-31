@@ -111,19 +111,19 @@ class Server:
         return self.__terminals_dict
 
     # return registry_log objects list
-    def report_log_from_day(self, date=datetime.now().date()):
-        predicate = lambda k: datetime.strptime(k, "%Y-%m-%d %H:%M:%S.%f").date() == date
+    def report_log_from_day(self, date=datetime.now()):
+        predicate = lambda k: datetime.strptime(k, "%Y-%m-%d %H:%M:%S.%f").date() == date.date()
         filtered_keys = list(filter(predicate, self.__logs_dict.keys()))
         filtered_logs = list(map(lambda k: self.__logs_dict[k], filtered_keys))
         return filtered_logs
 
     # return registry_log objects list
-    def report_log_from_day_worker(self, worker_id, date=datetime.now().date()):
+    def report_log_from_day_worker(self, worker_id, date=datetime.now()):
         logs_from_day = self.report_log_from_day(date)
         return list(filter(lambda l: l.worker_id == worker_id, logs_from_day))
 
     # return datatime value
-    def report_work_time_from_day_worker(self, worker_id, date=datetime.now().date()):
+    def report_work_time_from_day_worker(self, worker_id, date=datetime.now()):
         worker_log_for_day = self.report_log_from_day_worker(worker_id, date)
         work_cycles = []
         for i in range(0, len(worker_log_for_day) - 1, 2):
@@ -134,14 +134,15 @@ class Server:
             result = exit_date - enter_date
             work_cycles.append(result)
         if len(work_cycles) == 0:
-            return datetime.now().min
+            return datetime.now().time().min
         if len(work_cycles) == 1:
             return work_cycles[0]
         return sum(work_cycles[1:], work_cycles[0])
 
-    # return tuple (worker_id, work_time)
-    def report_work_time_from_day(self, date=datetime.now().date()):
+    # return list of tuples (worker_id, work_time)
+    def report_work_time_from_day(self, date=datetime.now()):
         fun = lambda id: (id, self.report_work_time_from_day_worker(id, date))
         work_time_list = list(map(fun, self.__workers_dict.keys()))
         only_positive_work_time = list(filter(lambda time: time[1] > time[1].min, work_time_list))
         return only_positive_work_time
+        # return work_time_list

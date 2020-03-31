@@ -1,3 +1,4 @@
+from datetime import datetime
 from app.logic.server import Server, DataInputError
 import app.cli as ui
 
@@ -14,7 +15,7 @@ class ClientController:
     def check_any_terminal_registered(self):
         if not self.server.is_any_terminal_registered():
             ui.show_msg(ui.NOT_REGISTERED_ANY_TERMINAL_MSG)
-            input(ui.WAIT_FOR_INPUT_MSG)
+            ui.read_data(ui.WAIT_FOR_INPUT_MSG)
             exit(0)
 
     def get_terminal_from_user(self):
@@ -59,9 +60,9 @@ class ServerController:
 
     def get_menu_option(self):
         user_input = input(ui.CHOOSE_MENU_OPTION_MSG)
-        if not user_input.isdigit():
+        while not user_input.isdigit():
             self.show_incorrect_menu_option_msg()
-            self.get_menu_option()
+            user_input = input(ui.CHOOSE_MENU_OPTION_MSG)
         menu_option = float(user_input)
 
         return menu_option
@@ -91,8 +92,11 @@ class ServerController:
             self.show_data(self.server.get_registered_logs().values())
         elif option == ui.ServerMenu.show_terminals.number:
             self.show_data(self.server.get_terminals().values())
+        elif option == ui.ServerMenu.generate_reports.number:
+            self.show_reports_generate_menu()
         else:
             self.show_incorrect_menu_option_msg()
+        ui.read_data(ui.WAIT_FOR_INPUT_MSG)
 
     def show_add_terminal_ui(self):
         term_id = ui.read_data(ui.TERMINAL_ID_INPUT_MSG)
@@ -155,9 +159,53 @@ class ServerController:
     def show_data(self, arr):
         ui.show_msg(ui.NEW_SESSION_SEPARATOR_MSG)
         if arr.__len__() > 0:
-            for worker in arr:
-                ui.show_msg(worker.__str__())
+            for element in arr:
+                ui.show_msg(element.__str__())
                 ui.show_msg(ui.NEW_SESSION_SEPARATOR_MSG)
         else:
             ui.show_msg(ui.EMPTY_MSG)
             ui.show_msg(ui.NEW_SESSION_SEPARATOR_MSG)
+
+    def show_reports_generate_menu(self):
+        ui.ServerReportMenu.show()
+        option = self.get_menu_option()
+        if option == ui.ServerReportMenu.report_log_from_day.number:
+            date = self.read_player_date_input()
+            if date is not None:
+                generated_data = self.server.report_log_from_day(date)
+                self.show_data(generated_data)
+        elif option == ui.ServerReportMenu.report_log_from_day_worker.number:
+            worker_id = ui.read_data(ui.WORKER_ID_INPUT_MSG)
+            date = self.read_player_date_input()
+            if date is not None:
+                generated_data = self.server.report_log_from_day_worker(worker_id, date)
+                self.show_data(generated_data)
+        elif option == ui.ServerReportMenu.report_work_time_from_day_worker.number:
+            worker_id = ui.read_data(ui.WORKER_ID_INPUT_MSG)
+            date = self.read_player_date_input()
+            if date is not None:
+                generated_data = self.server.report_work_time_from_day_worker(worker_id, date)
+                ui.show_msg(ui.NEW_SESSION_SEPARATOR_MSG)
+                ui.show_msg(generated_data)
+                ui.show_msg(ui.NEW_SESSION_SEPARATOR_MSG)
+        elif option == ui.ServerReportMenu.report_work_time_from_day.number:
+            date = self.read_player_date_input()
+            if date is not None:
+                generated_data = self.server.report_work_time_from_day(date)
+                ui.show_msg(ui.NEW_SESSION_SEPARATOR_MSG)
+                for tup in generated_data:
+                    ui.show_msg("Worker ID: " + tup[0] + " Work time: " + tup[1].__str__())
+                    ui.show_msg(ui.NEW_SESSION_SEPARATOR_MSG)
+            else:
+                pass
+
+    def read_player_date_input(self):
+        date_str = ui.read_data(ui.DATE_INPUT_MSG)
+        if date_str == "":
+            return datetime.now()
+        try:
+            date = datetime.strptime(date_str, "%Y-%m-%d")
+            return date
+        except ValueError:
+            ui.show_msg(ui.INCORRECT_DATE_FORMAT_MSG + datetime.now().date().__str__())
+            return None

@@ -37,6 +37,8 @@ REMOVED_WORKER_MSG = "Removed worker from server database"
 REMOVED_CARD_MSG = "Removed card from worker: "
 ADDED_CARD_TO_WORKER_MSG = "Assigned card to worker"
 EMPTY_MSG = "Empty - nothing to show"
+INCORRECT_DATE_FORMAT_MSG = "Incorrect date value or format - should be YYYY-MM-DD, e.g. "
+DATE_INPUT_MSG = "Enter date in format YYYY-MM-DD (or nothing for choosing current day) and press enter: "
 
 ServerMenuTuple = namedtuple('Menu', ['number', 'display_string'])
 
@@ -59,11 +61,34 @@ class ServerMenu(Enum):
     show_workers = ServerMenuTuple(7, "Print workers database")
     show_logs = ServerMenuTuple(8, "Print database records log")
     show_terminals = ServerMenuTuple(9, "Print terminals saved in database")
-    exit_menu = ServerMenuTuple(10, "Exit - press enter without giving any text to console")
+    generate_reports = ServerMenuTuple(10, "Generate reports")
+    exit_menu = ServerMenuTuple(11, "Exit - press enter without giving any text to console")
 
     @staticmethod
     def show():
         print(NEW_SESSION_SEPARATOR_MSG)
         for s in ServerMenu:
+            print(s.number, s.display_string, sep=") ")
+        print(NEW_SESSION_SEPARATOR_MSG)
+
+
+class ServerReportMenu(Enum):
+    @property
+    def display_string(self):
+        return self.value.display_string
+
+    @property
+    def number(self):
+        return self.value.number
+
+    report_log_from_day = ServerMenuTuple(1, "Generate logs from given day ")
+    report_log_from_day_worker = ServerMenuTuple(2, "Generate logs from given day and worker")
+    report_work_time_from_day_worker = ServerMenuTuple(3, "Generate work time report for given worker and day")
+    report_work_time_from_day = ServerMenuTuple(4, "Generate work time report for all workers for given day")
+
+    @staticmethod
+    def show():
+        print(NEW_SESSION_SEPARATOR_MSG)
+        for s in ServerReportMenu:
             print(s.number, s.display_string, sep=") ")
         print(NEW_SESSION_SEPARATOR_MSG)
