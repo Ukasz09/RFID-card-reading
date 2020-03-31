@@ -3,7 +3,7 @@ import app.cli as ui
 import datetime
 
 
-# todo: raport generate function
+# todo: ui for raport generate
 
 
 def choose_client_or_server():
@@ -24,5 +24,4 @@ def choose_client_or_server():
 if __name__ == "__main__":
     # choose_client_or_server()
     # actual_date=datetime.datetime.now().date()
-    # print(ServerController().server.report_work_time_from_day())
-    print(ServerController().server.report_log_from_day())
+    print(ServerController().server.report_work_time_from_day())
