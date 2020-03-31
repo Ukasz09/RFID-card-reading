@@ -18,5 +18,9 @@
   {
     "term_id": "456",
     "name": "Spectre"
+  },
+  {
+    "term_id": "16",
+    "name": "Hall21"
   }
 ]

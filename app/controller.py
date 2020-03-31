@@ -3,6 +3,22 @@ from app.logic.server import Server, DataInputError
 import app.cli as ui
 
 
+def read_literal(prompt):
+    literal = ui.read_data(prompt)
+    while any(char.isdigit() for char in literal) or len(literal.strip()) < 2:
+        ui.show_msg(ui.INCORRECT_LITERALS_INPUT_MSG)
+        literal = ui.read_data(prompt)
+    return literal.upper()
+
+
+def read_digit(prompt):
+    digit = ui.read_data(prompt)
+    while not digit.isdigit():
+        ui.show_msg(ui.INCORRECT_DIGIT_INPUT_MSG)
+        digit = ui.read_data(prompt)
+    return digit
+
+
 class ClientController:
     def __init__(self):
         self.server = Server()
@@ -99,7 +115,7 @@ class ServerController:
         ui.read_data(ui.WAIT_FOR_INPUT_MSG)
 
     def show_add_terminal_ui(self):
-        term_id = ui.read_data(ui.TERMINAL_ID_INPUT_MSG)
+        term_id = read_digit(ui.TERMINAL_ID_INPUT_MSG)
         term_name = ui.read_data(ui.TERMINAL_NAME_INPUT_MSG)
         try:
             self.server.add_terminal(term_id, term_name)
@@ -118,9 +134,10 @@ class ServerController:
             ui.show_msg(ui.REMOVED_TERMINAL_MSG)
 
     def show_add_worker_ui(self):
-        worker_id = ui.read_data(ui.WORKER_ID_INPUT_MSG)
-        worker_name = ui.read_data(ui.WORKER_NAME_INPUT_MSG)
-        worker_surname = ui.read_data(ui.WORKER_SURNAME_INPUT_MSG)
+        worker_id = read_digit(ui.WORKER_ID_INPUT_MSG)
+        worker_name = read_literal(ui.WORKER_NAME_INPUT_MSG)
+        worker_surname = read_literal(ui.WORKER_SURNAME_INPUT_MSG)
+
         try:
             self.server.add_worker(worker_name, worker_surname, worker_id)
         except DataInputError as err:
@@ -139,7 +156,7 @@ class ServerController:
 
     def show_add_card_ui(self):
         worker_id = ui.read_data(ui.WORKER_ID_INPUT_MSG)
-        card_id = ui.read_data(ui.CARD_ID_INPUT_MSG)
+        card_id = read_digit(ui.CARD_ID_INPUT_MSG)
         try:
             self.server.add_card_to_worker(card_id, worker_id)
         except DataInputError as err:
@@ -167,20 +184,20 @@ class ServerController:
             ui.show_msg(ui.NEW_SESSION_SEPARATOR_MSG)
 
     def show_reports_generate_menu(self):
-        ui.ServerReportMenu.show()
+        ui.ServerReportsMenu.show()
         option = self.get_menu_option()
-        if option == ui.ServerReportMenu.report_log_from_day.number:
+        if option == ui.ServerReportsMenu.report_log_from_day.number:
             date = self.read_player_date_input()
             if date is not None:
                 generated_data = self.server.report_log_from_day(True, date)
                 self.show_data(generated_data)
-        elif option == ui.ServerReportMenu.report_log_from_day_worker.number:
+        elif option == ui.ServerReportsMenu.report_log_from_day_worker.number:
             worker_id = ui.read_data(ui.WORKER_ID_INPUT_MSG)
             date = self.read_player_date_input()
             if date is not None:
                 generated_data = self.server.report_log_from_day_worker(worker_id, True, date)
                 self.show_data(generated_data)
-        elif option == ui.ServerReportMenu.report_work_time_from_day_worker.number:
+        elif option == ui.ServerReportsMenu.report_work_time_from_day_worker.number:
             worker_id = ui.read_data(ui.WORKER_ID_INPUT_MSG)
             date = self.read_player_date_input()
             if date is not None:
@@ -188,12 +205,12 @@ class ServerController:
                 ui.show_msg(ui.NEW_SESSION_SEPARATOR_MSG)
                 ui.show_msg(generated_data)
                 ui.show_msg(ui.NEW_SESSION_SEPARATOR_MSG)
-        elif option == ui.ServerReportMenu.report_work_time_from_day.number:
+        elif option == ui.ServerReportsMenu.report_work_time_from_day.number:
             date = self.read_player_date_input()
             if date is not None:
                 generated_data = self.server.report_work_time_from_day(True, date)
                 self.show_worker_with_time_report(generated_data)
-        elif option == ui.ServerReportMenu.report_general_work_time.number:
+        elif option == ui.ServerReportsMenu.report_general_work_time.number:
             generated_data = self.server.general_report(True)
             self.show_worker_with_time_report(generated_data)
         else:

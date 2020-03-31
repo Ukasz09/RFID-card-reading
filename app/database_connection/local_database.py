@@ -2,7 +2,6 @@ import json
 from app.logic.terminal import Terminal
 from app.logic.worker import Worker
 from app.logic.registry_log import RegistryLog
-from datetime import datetime
 
 
 class LocalDatabase:

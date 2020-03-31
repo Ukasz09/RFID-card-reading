@@ -1,6 +1,15 @@
 from enum import Enum
 from collections import namedtuple
 
+
+def read_data(prompt=""):
+    return input(prompt)
+
+
+def show_msg(msg):
+    print(msg)
+
+
 # CLIENT
 TERMINAL_ID_INPUT_MSG = "Enter terminal id: "
 TERMINAL_NAME_INPUT_MSG = "Enter terminal name: "
@@ -13,15 +22,6 @@ NOT_REGISTERED_ANY_TERMINAL_MSG = "Not found any registered terminal in database
 NEW_SESSION_SEPARATOR_MSG = "\n___________________________________________________________________________________\n"
 WAIT_FOR_INPUT_MSG = "Press any key ..."
 NOT_FOUND_TERMINAL_MSG = "Terminal not assigned in database"
-
-
-def read_data(prompt=""):
-    return input(prompt)
-
-
-def show_msg(msg):
-    print(msg)
-
 
 # SERVER
 CHOOSE_MENU_OPTION_MSG = "Choose menu option: "
@@ -40,6 +40,8 @@ EMPTY_MSG = "Empty - nothing to show"
 INCORRECT_DATE_FORMAT_MSG = "Incorrect date value or format - should be YYYY-MM-DD, e.g. "
 DATE_INPUT_MSG = "Enter date in format YYYY-MM-DD (or nothing for choosing current day) and press enter: "
 SAVED_REPORT_IN_DATABASE_MSG = "Saved report in database server"
+INCORRECT_DIGIT_INPUT_MSG = "Incorrect input - must be digit"
+INCORRECT_LITERALS_INPUT_MSG = "Incorrect input - cannot be empty or contain digit"
 
 ServerMenuTuple = namedtuple('Menu', ['number', 'display_string'])
 
@@ -73,7 +75,7 @@ class ServerMenu(Enum):
         print(NEW_SESSION_SEPARATOR_MSG)
 
 
-class ServerReportMenu(Enum):
+class ServerReportsMenu(Enum):
     @property
     def display_string(self):
         return self.value.display_string
@@ -91,6 +93,6 @@ class ServerReportMenu(Enum):
     @staticmethod
     def show():
         print(NEW_SESSION_SEPARATOR_MSG)
-        for s in ServerReportMenu:
+        for s in ServerReportsMenu:
             print(s.number, s.display_string, sep=") ")
         print(NEW_SESSION_SEPARATOR_MSG)
