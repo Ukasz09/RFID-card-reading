@@ -172,13 +172,13 @@ class ServerController:
         if option == ui.ServerReportMenu.report_log_from_day.number:
             date = self.read_player_date_input()
             if date is not None:
-                generated_data = self.server.report_log_from_day(date)
+                generated_data = self.server.report_log_from_day(True, date)
                 self.show_data(generated_data)
         elif option == ui.ServerReportMenu.report_log_from_day_worker.number:
             worker_id = ui.read_data(ui.WORKER_ID_INPUT_MSG)
             date = self.read_player_date_input()
             if date is not None:
-                generated_data = self.server.report_log_from_day_worker(worker_id, date)
+                generated_data = self.server.report_log_from_day_worker(worker_id, True, date)
                 self.show_data(generated_data)
         elif option == ui.ServerReportMenu.report_work_time_from_day_worker.number:
             worker_id = ui.read_data(ui.WORKER_ID_INPUT_MSG)
@@ -191,13 +191,19 @@ class ServerController:
         elif option == ui.ServerReportMenu.report_work_time_from_day.number:
             date = self.read_player_date_input()
             if date is not None:
-                generated_data = self.server.report_work_time_from_day(date)
-                ui.show_msg(ui.NEW_SESSION_SEPARATOR_MSG)
-                for tup in generated_data:
-                    ui.show_msg("Worker ID: " + tup[0] + " Work time: " + tup[1].__str__())
-                    ui.show_msg(ui.NEW_SESSION_SEPARATOR_MSG)
-            else:
-                pass
+                generated_data = self.server.report_work_time_from_day(True, date)
+                self.show_worker_with_time_report(generated_data)
+        elif option == ui.ServerReportMenu.report_general_work_time.number:
+            generated_data = self.server.general_report(True)
+            self.show_worker_with_time_report(generated_data)
+        else:
+            self.show_incorrect_menu_option_msg()
+
+    def show_worker_with_time_report(self, tuple_data):
+        ui.show_msg(ui.NEW_SESSION_SEPARATOR_MSG)
+        for tup in tuple_data:
+            ui.show_msg("Worker ID: " + tup[0] + " Work time: " + tup[1].__str__())
+            ui.show_msg(ui.NEW_SESSION_SEPARATOR_MSG)
 
     def read_player_date_input(self):
         date_str = ui.read_data(ui.DATE_INPUT_MSG)

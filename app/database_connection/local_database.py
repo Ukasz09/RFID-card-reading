@@ -2,6 +2,7 @@ import json
 from app.logic.terminal import Terminal
 from app.logic.worker import Worker
 from app.logic.registry_log import RegistryLog
+from datetime import datetime
 
 
 class LocalDatabase:
@@ -12,11 +13,11 @@ class LocalDatabase:
 
     @staticmethod
     def __save_data(json_path, objects_arr):
-        methods_dict_arr = []
+        methods_dict_list = []
         for i in objects_arr:
-            methods_dict_arr.append(i.__dict__)
+            methods_dict_list.append(i.__dict__)
         with open(json_path, "w") as f:
-            json_txt = json.dumps(methods_dict_arr, indent=2, default=str)
+            json_txt = json.dumps(methods_dict_list, indent=2, default=str)
             f.write(json_txt)
 
     def read_terminals(self):
@@ -63,3 +64,14 @@ class LocalDatabase:
 
     def write_logs(self, objects_arr):
         LocalDatabase.__save_data(self.logs_path, objects_arr)
+
+    def write_reports_with_objects(self, objects_list, report_name):
+        path = "../data/" + report_name + ".json"
+        LocalDatabase.__save_data(path, objects_list)
+
+    def write_reports_with_tuples(self, tuples_list, report_name):
+        path = "../data/" + report_name + ".json"
+        list_of_dict = list(map(lambda tup: {"worker_id": tup[0], "work_time": tup[1]}, tuples_list))
+        with open(path, "w") as f:
+            json_txt = json.dumps(list_of_dict, indent=2, default=str)
+            f.write(json_txt)

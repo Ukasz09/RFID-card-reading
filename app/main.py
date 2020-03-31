@@ -2,9 +2,6 @@ from app.controller import ClientController, ServerController
 import app.cli as ui
 
 
-# todo: generate reports to json besides printing
-
-
 def choose_client_or_server():
     options = "Choose application mode:\n 1) Client \n 2) Server"
     while True:

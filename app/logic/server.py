@@ -111,25 +111,46 @@ class Server:
         return self.__terminals_dict
 
     # return registry_log objects list
-    def report_log_from_day(self, date=datetime.now()):
+    def report_log_from_day(self, with_saving, date=datetime.now()):
         predicate = lambda k: datetime.strptime(k, "%Y-%m-%d %H:%M:%S.%f").date() == date.date()
         filtered_keys = list(filter(predicate, self.__logs_dict.keys()))
         filtered_logs = list(map(lambda k: self.__logs_dict[k], filtered_keys))
+
+        if with_saving:
+            report_name = "Report_[LOGS]_" + date.date().__str__()
+            self.__database.write_reports_with_objects(filtered_logs, report_name)
         return filtered_logs
 
     # return registry_log objects list
-    def report_log_from_day_worker(self, worker_id, date=datetime.now()):
-        logs_from_day = self.report_log_from_day(date)
-        return list(filter(lambda l: l.worker_id == worker_id, logs_from_day))
+    def report_log_from_day_worker(self, worker_id, with_saving, date=datetime.now()):
+        logs_from_day = self.report_log_from_day(False, date)
+        filtered_logs = list(filter(lambda l: l.worker_id == worker_id, logs_from_day))
+
+        if with_saving:
+            report_name = "Report_[LOGS]_[" + worker_id + "]_" + date.date().__str__()
+            self.__database.write_reports_with_objects(filtered_logs, report_name)
+        return filtered_logs
+
+    # return registry_log objects list
+    def general_log_for_worker(self, worker_id):
+        filtered_logs = []
+        for log in self.__logs_dict.values():
+            if log.worker_id == worker_id:
+                filtered_logs.append(log)
+        return filtered_logs
 
     # return datatime value
     def report_work_time_from_day_worker(self, worker_id, date=datetime.now()):
-        worker_log_for_day = self.report_log_from_day_worker(worker_id, date)
+        worker_log_for_day = self.report_log_from_day_worker(worker_id, False, date)
+        return self.calculate_work_time_for_worker(worker_log_for_day)
+
+    # return datatime value
+    def calculate_work_time_for_worker(self, worker_log):
         work_cycles = []
-        for i in range(0, len(worker_log_for_day) - 1, 2):
-            exit_date_str = worker_log_for_day[i + 1].time
+        for i in range(0, len(worker_log) - 1, 2):
+            exit_date_str = worker_log[i + 1].time
             exit_date = datetime.strptime(exit_date_str, "%Y-%m-%d %H:%M:%S.%f")
-            enter_date_str = worker_log_for_day[i].time
+            enter_date_str = worker_log[i].time
             enter_date = datetime.strptime(enter_date_str, "%Y-%m-%d %H:%M:%S.%f")
             result = exit_date - enter_date
             work_cycles.append(result)
@@ -140,9 +161,22 @@ class Server:
         return sum(work_cycles[1:], work_cycles[0])
 
     # return list of tuples (worker_id, work_time)
-    def report_work_time_from_day(self, date=datetime.now()):
+    def report_work_time_from_day(self, with_saving, date=datetime.now()):
         fun = lambda id: (id, self.report_work_time_from_day_worker(id, date))
         work_time_list = list(map(fun, self.__workers_dict.keys()))
         only_positive_work_time = list(filter(lambda time: time[1] > time[1].min, work_time_list))
+        if with_saving:
+            report_name = "Report_[TIME]_" + date.date().__str__()
+            self.__database.write_reports_with_tuples(only_positive_work_time, report_name)
         return only_positive_work_time
-        # return work_time_list
+
+    # return list of tuples (worker_id, work_time)
+    def general_report(self, with_saving):
+        work_time_list = []
+        for w in self.__workers_dict.values():
+            general_work_time = self.calculate_work_time_for_worker(self.general_log_for_worker(w.worker_id))
+            work_time_list.append((w.worker_id, general_work_time))
+        if with_saving:
+            report_name = "Report_[GENERAL]_" + datetime.now().__str__()
+            self.__database.write_reports_with_tuples(work_time_list, report_name)
+        return work_time_list
