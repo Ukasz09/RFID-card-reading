@@ -53,7 +53,7 @@ class ClientController:
 
     def register_card(self, card_id):
         ui.show_msg(ui.CARD_SCANNED_PROPERLY_MSG)
-        card_owner = self.server.register_card_in_system(card_id, self.terminal.term_id)
+        card_owner = self.server.register_card_usage(card_id, self.terminal.term_id)
         ui.show_msg(ui.CARD_USAGE_REGISTERED_MSG)
         if card_owner is None:
             ui.show_msg(ui.UNKNOWN_CARD_OWNER_MSG)
@@ -158,7 +158,7 @@ class ServerController:
         worker_id = ui.read_data(ui.WORKER_ID_INPUT_MSG)
         card_id = read_digit(ui.CARD_ID_INPUT_MSG)
         try:
-            self.server.add_card_to_worker(card_id, worker_id)
+            self.server.assign_card_to_worker(card_id, worker_id)
         except DataInputError as err:
             ui.show_msg(err.message)
         else:
@@ -167,7 +167,7 @@ class ServerController:
     def show_remove_card_ui(self):
         term_id = ui.read_data(ui.CARD_ID_INPUT_MSG)
         try:
-            worker_id = self.server.remove_card_from_worker(term_id)
+            worker_id = self.server.unassign_card_from_worker(term_id)
         except DataInputError as err:
             ui.show_msg(err.message)
         else:
