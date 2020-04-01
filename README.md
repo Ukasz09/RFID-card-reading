@@ -1,4 +1,4 @@
-﻿# RFID-Card-Reading [![License](https://img.shields.io/badge/licence-MIT-blue)](https://choosealicense.com/licenses/mit/) [![Status](https://img.shields.io/badge/status-work--in--progress-yellow)](https://github.com/Ukasz09/RFID-card-reading)
+﻿# RFID Card Reading [![License](https://img.shields.io/badge/licence-MIT-blue)](https://choosealicense.com/licenses/mit/) [![Status](https://img.shields.io/badge/status-work--in--progress-yellow)](https://github.com/Ukasz09/RFID-card-reading)
 
  
 RFID card reading application for Client and Server with CLI as UI. Client application simulate terminal which can read RFID cards (temporary mocked, target by rasberryPi with RFID card reader). Server application - allow to control data in database and generate various reports
@@ -10,7 +10,7 @@ RFID card reading application for Client and Server with CLI as UI. Client appli
 
 ## Screenshots 
 
-See it in /screenshots folder 
+See it in `screenshots` folder 
 
 ## How to use it
 
@@ -23,12 +23,12 @@ Run bash script `run_windows.bat`
 Run shell script `run_linux.sh` 
 
 ## Software design stuff
-✅ Documentation (for game logic) <br/>
+✅ Documentation <br/>
 ✅ MVC (simplified) <br/>
 
 **Code overview:**
 <br/><br/>
-✔️ something about 1000 lines of code  <br/>
+✔️ around 1000 lines of code  <br/>
 
 ___
 ## 📫 Contact 
