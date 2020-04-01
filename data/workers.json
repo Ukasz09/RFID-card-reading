@@ -1,58 +1,18 @@
 [
   {
-    "worker_id": "777",
-    "name": "Ania",
-    "surname": "Gora",
-    "cards": []
+    "worker_guid": "4040",
+    "name": "JOHN",
+    "surname": "COOPER",
+    "cards": [
+      "500500"
+    ]
   },
   {
-    "worker_id": "4040",
-    "name": "John",
-    "surname": "Dyka",
+    "worker_guid": "987",
+    "name": "JOCKO WILLINK",
+    "surname": "SMITH",
     "cards": [
-      "12",
-      "1111",
       "1234"
     ]
-  },
-  {
-    "worker_id": "7",
-    "name": "Jas",
-    "surname": "Senapi",
-    "cards": [
-      "130"
-    ]
-  },
-  {
-    "worker_id": "13",
-    "name": "Stanislaw",
-    "surname": "Wasilewski",
-    "cards": []
-  },
-  {
-    "worker_id": "999",
-    "name": "\u0141ukasz",
-    "surname": "Piotrowski",
-    "cards": [
-      "451"
-    ]
-  },
-  {
-    "worker_id": "11",
-    "name": "Loko",
-    "surname": "Leilah",
-    "cards": []
-  },
-  {
-    "worker_id": "12",
-    "name": "ANIA",
-    "surname": "as",
-    "cards": []
-  },
-  {
-    "worker_id": "1234",
-    "name": "ANTON",
-    "surname": "KOWAL",
-    "cards": []
   }
 ]

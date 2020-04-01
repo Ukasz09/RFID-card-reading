@@ -17,7 +17,7 @@ def read_digit_or_exit_btn(prompt, exit_btn):
 
 class Terminal(object):
     def __init__(self, term_guid, name):
-        self.term_id = term_guid
+        self.term_guid = term_guid
         self.name = name
 
     def scan_card(self):
@@ -28,6 +28,5 @@ class Terminal(object):
         card_id = read_digit_or_exit_btn("Temporary mocked - put card id from keyboard or nothing to exit: ", "")
         return card_id
 
-
-def __str__(self):
-    return "Terminal GUID: " + self.term_id + "\nTerminal name: " + self.name
+    def __str__(self):
+        return "Terminal GUID: " + self.term_guid + "\nTerminal name: " + self.name

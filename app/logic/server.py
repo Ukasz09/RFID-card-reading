@@ -4,9 +4,12 @@ from app.logic.worker import Worker
 from app.logic.registry_log import RegistryLog
 from datetime import datetime
 
-terminal_json = "../data/terminals.json"
-workers_json = "../data/workers.json"
-logs_json = "../data/registrations.json"
+# terminal_json = "../data/terminals.json"
+terminal_json = "data/terminals.json"
+# workers_json = "../data/workers.json"
+workers_json = "data/workers.json"
+# logs_json = "../data/registrations.json"
+logs_json = "data/registrations.json"
 
 
 class DataInputError(BaseException):
@@ -106,7 +109,7 @@ class Server:
             if card_guid in w.cards:
                 w.cards.remove(card_guid)
                 self.__database.write_workers(self.__workers_dict.values())
-                return w.worker_id
+                return w.worker_guid
         raise DataInputError("Card with id: " + card_guid + " hasn't been signed to any worker")
 
     def register_card_usage(self, card_guid, term_guid):
@@ -120,10 +123,10 @@ class Server:
         if not self.terminal_in_database(term_guid):
             raise DataInputError("Terminal with id: " + term_guid + " not assigned in database")
         if card_owner is None:
-            owner_id = None
+            owner_guid = None
         else:
-            owner_id = card_owner.worker_id
-        self.register_log(card_guid, term_guid, owner_id)
+            owner_guid = card_owner.worker_guid
+        self.register_log(card_guid, term_guid, owner_guid)
         return card_owner
 
     def terminal_in_database(self, term_guid):
@@ -195,7 +198,7 @@ class Server:
         :return: List of <RegistryLog> objects
         """
         logs_from_day = self.report_log_from_day(False, date)
-        filtered_logs = list(filter(lambda l: l.worker_id == worker_guid, logs_from_day))
+        filtered_logs = list(filter(lambda l: l.worker_guid == worker_guid, logs_from_day))
 
         if with_saving:
             report_name = "Report_[LOGS]_[" + worker_guid + "]_" + date.date().__str__()
@@ -210,7 +213,7 @@ class Server:
         """
         filtered_logs = []
         for log in self.__logs_dict.values():
-            if log.worker_id == worker_guid:
+            if log.worker_guid == worker_guid:
                 filtered_logs.append(log)
         return filtered_logs
 
@@ -251,7 +254,7 @@ class Server:
         :param date: will be returned only results with date equals <date>
         :return: List of tuples (worker GUID, work time <datatime>)
         """
-        fun = lambda id: (id, self.report_work_time_from_day_worker(id, date))
+        fun = lambda guid: (guid, self.report_work_time_from_day_worker(guid, date))
         work_time_list = list(map(fun, self.__workers_dict.keys()))
         only_positive_work_time = list(filter(lambda time: time[1] > time[1].min, work_time_list))
         if with_saving:
@@ -267,8 +270,8 @@ class Server:
         """
         work_time_list = []
         for w in self.__workers_dict.values():
-            general_work_time = self.calculate_work_time_for_worker(self.general_log_for_worker(w.worker_id))
-            work_time_list.append((w.worker_id, general_work_time))
+            general_work_time = self.calculate_work_time_for_worker(self.general_log_for_worker(w.worker_guid))
+            work_time_list.append((w.worker_guid, general_work_time))
         if with_saving:
             report_name = "Report_[GENERAL]_" + datetime.now().__str__()
             self.__database.write_reports_with_tuples(work_time_list, report_name)

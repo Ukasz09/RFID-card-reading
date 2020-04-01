@@ -1,26 +1,10 @@
 [
   {
-    "term_id": "123414",
+    "term_guid": "123414",
     "name": "STATION 1"
   },
   {
-    "term_id": "1111111222",
-    "name": "Office_control"
-  },
-  {
-    "term_id": "1",
-    "name": "Secretary_Hall_2"
-  },
-  {
-    "term_id": "666",
-    "name": "Angry Scary Hall"
-  },
-  {
-    "term_id": "456",
-    "name": "Spectre"
-  },
-  {
-    "term_id": "16",
-    "name": "Hall21"
+    "term_guid": "98765678",
+    "name": "Office Hall"
   }
 ]

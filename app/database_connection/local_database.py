@@ -45,9 +45,9 @@ class LocalDatabase:
         result_dict = {}
         f_content = LocalDatabase.__read_data(self.term_path)
         for term_dict in json.loads(f_content):
-            term_id = term_dict["term_id"]
+            term_guid = term_dict["term_guid"]
             term_name = term_dict["name"]
-            result_dict[term_id] = Terminal(term_id, term_name)
+            result_dict[term_guid] = Terminal(term_guid, term_name)
         return result_dict
 
     def read_logs(self):
@@ -59,10 +59,10 @@ class LocalDatabase:
         f_content = LocalDatabase.__read_data(self.logs_path)
         for term_dict in json.loads(f_content):
             time = term_dict["time"]
-            term_id = term_dict["term_id"]
-            card_id = term_dict["card_id"]
-            worker_id = term_dict["worker_id"]
-            result_dict[time] = RegistryLog(time, term_id, card_id, worker_id)
+            term_guid = term_dict["term_guid"]
+            card_id = term_dict["card_guid"]
+            worker_id = term_dict["worker_guid"]
+            result_dict[time] = RegistryLog(time, term_guid, card_id, worker_id)
         return result_dict
 
     def read_workers(self):
@@ -73,11 +73,11 @@ class LocalDatabase:
         result_dict = {}
         f_content = LocalDatabase.__read_data(self.workers_path)
         for workers_dict in json.loads(f_content):
-            worker_id = workers_dict["worker_id"]
+            worker_guid = workers_dict["worker_guid"]
             name = workers_dict["name"]
             surname = workers_dict["surname"]
             cards = workers_dict["cards"]
-            result_dict[worker_id] = Worker(name, surname, worker_id, cards)
+            result_dict[worker_guid] = Worker(name, surname, worker_guid, cards)
         return result_dict
 
     def write_terminals(self, objects_list):
@@ -107,7 +107,7 @@ class LocalDatabase:
         :param report_name: filename of new  generated report
         :param objects_list:  list of objects to save in report file
         """
-        path = "../data/" + report_name + ".json"
+        path = "data/" + report_name + ".json"
         LocalDatabase.__save_data(path, objects_list)
 
     def write_reports_with_tuples(self, tuples_list, report_name):
@@ -116,8 +116,8 @@ class LocalDatabase:
         :param report_name: filename of new  generated report
         :param tuples_list:  list of tuples to save in report file
         """
-        path = "../data/" + report_name + ".json"
-        list_of_dict = list(map(lambda tup: {"worker_id": tup[0], "work_time": tup[1]}, tuples_list))
+        path = "data/" + report_name + ".json"
+        list_of_dict = list(map(lambda tup: {"Worker_GUID": tup[0], "Work_time": tup[1]}, tuples_list))
         with open(path, "w") as f:
             json_txt = json.dumps(list_of_dict, indent=2, default=str)
             f.write(json_txt)

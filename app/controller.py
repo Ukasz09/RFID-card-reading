@@ -81,14 +81,14 @@ class ClientController:
         :param card_guid:
         """
         ui.show_msg(ui.CARD_SCANNED_PROPERLY_MSG)
-        card_owner = self.server.register_card_usage(card_guid, self.terminal.term_id)
+        card_owner = self.server.register_card_usage(card_guid, self.terminal.term_guid)
         ui.show_msg(ui.CARD_USAGE_REGISTERED_MSG)
         if card_owner is None:
             ui.show_msg(ui.UNKNOWN_CARD_OWNER_MSG)
         else:
-            owner_id = card_owner.worker_id
+            owner_guid = card_owner.worker_guid
             owner_fullname = card_owner.name + " " + card_owner.surname
-            ui.show_msg(ui.CARD_OWNER_IS_KNOWN_MSG + owner_id + ", " + owner_fullname)
+            ui.show_msg(ui.CARD_OWNER_IS_KNOWN_MSG + owner_guid + ", " + owner_fullname)
         ui.show_msg(ui.NEW_SESSION_SEPARATOR_MSG)
 
 
