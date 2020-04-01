@@ -3,21 +3,29 @@ from collections import namedtuple
 
 
 def read_data(prompt=""):
+    """
+    Read data from user vi Command Line Interface (CLI)
+    :param prompt: Prompt for input
+    """
     return input(prompt)
 
 
 def show_msg(msg):
+    """
+    Show message in Command Line Interface (CLI)
+    :param msg: Message to show
+    """
     print(msg)
 
 
 # CLIENT
-TERMINAL_ID_INPUT_MSG = "Enter terminal id: "
+TERMINAL_GUID_INPUT_MSG = "Enter terminal GUID: "
 TERMINAL_NAME_INPUT_MSG = "Enter terminal name: "
 CARD_SCAN_PROMPT_MSG = "Scan your RFID card"
 CARD_SCANNED_PROPERLY_MSG = "Card scanned properly"
 CARD_USAGE_REGISTERED_MSG = "Saved in database usage of RFID card"
 UNKNOWN_CARD_OWNER_MSG = "Card owner unknown"
-CARD_OWNER_IS_KNOWN_MSG = "Card owner: "
+CARD_OWNER_IS_KNOWN_MSG = "Card owner is: "
 NOT_REGISTERED_ANY_TERMINAL_MSG = "Not found any registered terminal in database. Ask server admin for adding one: "
 NEW_SESSION_SEPARATOR_MSG = "\n___________________________________________________________________________________\n"
 WAIT_FOR_INPUT_MSG = "Press any key ..."
@@ -31,8 +39,8 @@ ADDED_WORKER_MSG = "Added worker to server database"
 REMOVED_TERMINAL_MSG = "Removed terminal from server database"
 WORKER_NAME_INPUT_MSG = "Enter worker name: "
 WORKER_SURNAME_INPUT_MSG = "Enter worker surname: "
-WORKER_ID_INPUT_MSG = "Enter worker id: "
-CARD_ID_INPUT_MSG = "Enter card id: "
+WORKER_ID_INPUT_MSG = "Enter worker GUID: "
+CARD_ID_INPUT_MSG = "Enter card GUID: "
 REMOVED_WORKER_MSG = "Removed worker from server database"
 REMOVED_CARD_MSG = "Removed card from worker: "
 ADDED_CARD_TO_WORKER_MSG = "Assigned card to worker"
@@ -49,10 +57,16 @@ ServerMenuTuple = namedtuple('Menu', ['number', 'display_string'])
 class ServerMenu(Enum):
     @property
     def display_string(self):
+        """
+        :return: Display string assigned to particular menu option
+        """
         return self.value.display_string
 
     @property
     def number(self):
+        """
+        :return: Number assigned to particular menu option
+        """
         return self.value.number
 
     add_terminal = ServerMenuTuple(1, "Add new terminal to database")
@@ -69,6 +83,9 @@ class ServerMenu(Enum):
 
     @staticmethod
     def show():
+        """
+        Show server menu in CLI
+        """
         print(NEW_SESSION_SEPARATOR_MSG)
         for s in ServerMenu:
             print(s.number, s.display_string, sep=") ")
@@ -78,10 +95,16 @@ class ServerMenu(Enum):
 class ServerReportsMenu(Enum):
     @property
     def display_string(self):
+        """
+        :return: Display string assigned to particular menu option
+        """
         return self.value.display_string
 
     @property
     def number(self):
+        """
+        :return: Number assigned to particular menu option
+        """
         return self.value.number
 
     report_log_from_day = ServerMenuTuple(1, "Generate logs from given day ")
@@ -92,6 +115,9 @@ class ServerReportsMenu(Enum):
 
     @staticmethod
     def show():
+        """
+        Show in CLI, server submenu for report generations
+        """
         print(NEW_SESSION_SEPARATOR_MSG)
         for s in ServerReportsMenu:
             print(s.number, s.display_string, sep=") ")

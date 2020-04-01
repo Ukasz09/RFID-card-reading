@@ -3,6 +3,9 @@ import app.cli as ui
 
 
 def choose_client_or_server():
+    """
+    Function for choosing which kind of application we want to run: client or server
+    """
     options = "Choose application mode:\n 1) Client \n 2) Server"
     while True:
         ui.show_msg(options)

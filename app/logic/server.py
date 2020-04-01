@@ -186,31 +186,50 @@ class Server:
             self.__database.write_reports_with_objects(filtered_logs, report_name)
         return filtered_logs
 
-    # return registry_log objects list
-    def report_log_from_day_worker(self, worker_id, with_saving, date=datetime.now()):
+    def report_log_from_day_worker(self, worker_guid, with_saving, date=datetime.now()):
+        """
+        Generate report with all logs added in given date which relate with worker with given GUID
+        :param worker_guid: GUID of worker for whose we generate reports
+        :param with_saving: True - save report in database, False - not save report in database
+        :param date: will be returned only logs with date equals <date>
+        :return: List of <RegistryLog> objects
+        """
         logs_from_day = self.report_log_from_day(False, date)
-        filtered_logs = list(filter(lambda l: l.worker_id == worker_id, logs_from_day))
+        filtered_logs = list(filter(lambda l: l.worker_id == worker_guid, logs_from_day))
 
         if with_saving:
-            report_name = "Report_[LOGS]_[" + worker_id + "]_" + date.date().__str__()
+            report_name = "Report_[LOGS]_[" + worker_guid + "]_" + date.date().__str__()
             self.__database.write_reports_with_objects(filtered_logs, report_name)
         return filtered_logs
 
-    # return registry_log objects list
-    def general_log_for_worker(self, worker_id):
+    def general_log_for_worker(self, worker_guid):
+        """
+         Generate report with all logs which are relate with worker with given GUID
+        :param worker_guid: GUID of worker for whose we generate reports
+        :return: List of <RegistryLog> objects
+        """
         filtered_logs = []
         for log in self.__logs_dict.values():
-            if log.worker_id == worker_id:
+            if log.worker_id == worker_guid:
                 filtered_logs.append(log)
         return filtered_logs
 
-    # return datatime value
-    def report_work_time_from_day_worker(self, worker_id, date=datetime.now()):
-        worker_log_for_day = self.report_log_from_day_worker(worker_id, False, date)
+    def report_work_time_from_day_worker(self, worker_guid, date=datetime.now()):
+        """
+        Generate datatime value which means how much time worker with given GUID work in given day
+        :param worker_guid: GUID of worker for whose we generate reports
+        :param date: will be returned only logs with date equals <date>
+        :return: <datatime> value
+        """
+        worker_log_for_day = self.report_log_from_day_worker(worker_guid, False, date)
         return self.calculate_work_time_for_worker(worker_log_for_day)
 
-    # return datatime value
     def calculate_work_time_for_worker(self, worker_log):
+        """
+        Generate datatime value which means how much time worker with given GUID work in general
+        :param worker_log: List with reports logs, which are relate with worker for whose we searching work time for
+        :return: <datatime> value
+        """
         work_cycles = []
         for i in range(0, len(worker_log) - 1, 2):
             exit_date_str = worker_log[i + 1].time
@@ -225,8 +244,13 @@ class Server:
             return work_cycles[0]
         return sum(work_cycles[1:], work_cycles[0])
 
-    # return list of tuples (worker_id, work_time)
     def report_work_time_from_day(self, with_saving, date=datetime.now()):
+        """
+        Generate report with tuples (worker GUID, work time) for given day
+        :param with_saving: True - save report in database, False - not save report in database
+        :param date: will be returned only results with date equals <date>
+        :return: List of tuples (worker GUID, work time <datatime>)
+        """
         fun = lambda id: (id, self.report_work_time_from_day_worker(id, date))
         work_time_list = list(map(fun, self.__workers_dict.keys()))
         only_positive_work_time = list(filter(lambda time: time[1] > time[1].min, work_time_list))
@@ -235,8 +259,12 @@ class Server:
             self.__database.write_reports_with_tuples(only_positive_work_time, report_name)
         return only_positive_work_time
 
-    # return list of tuples (worker_id, work_time)
     def general_report(self, with_saving):
+        """
+        Generate general report with tuples (worker GUID, work time) with every saved in database logs
+        :param with_saving: True - save report in database, False - not save report in database
+        :return: List of tuples (worker GUID, work time <datatime>)
+        """
         work_time_list = []
         for w in self.__workers_dict.values():
             general_work_time = self.calculate_work_time_for_worker(self.general_log_for_worker(w.worker_id))
