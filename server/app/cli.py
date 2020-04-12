@@ -50,6 +50,7 @@ DATE_INPUT_MSG = "Enter date in format YYYY-MM-DD (or nothing for choosing curre
 SAVED_REPORT_IN_DATABASE_MSG = "Saved report in database server"
 INCORRECT_DIGIT_INPUT_MSG = "Incorrect input - must be digit"
 INCORRECT_LITERALS_INPUT_MSG = "Incorrect input - cannot be empty or contain digit"
+TRACKING_ACTIVITY_MENU = "Tracking activity on server. Press 0 to exit"
 
 ServerMenuTuple = namedtuple('Menu', ['number', 'display_string'])
 
@@ -79,7 +80,8 @@ class ServerMenu(Enum):
     show_logs = ServerMenuTuple(8, "Print database records log")
     show_terminals = ServerMenuTuple(9, "Print terminals saved in database")
     generate_reports = ServerMenuTuple(10, "Generate reports")
-    exit_menu = ServerMenuTuple(11, "Exit - press enter without giving any text to console")
+    tracking_activity = ServerMenuTuple(11, "Track activity - show interactive logs with terminals activity")
+    exit_menu = ServerMenuTuple(12, "Exit - press enter without giving any text to console")
 
     @staticmethod
     def show():

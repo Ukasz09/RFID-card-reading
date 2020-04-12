@@ -94,5 +94,95 @@
     "term_guid": "123414",
     "card_guid": "1234",
     "worker_guid": "987"
+  },
+  {
+    "time": "2020-04-12 11:00:41.219058",
+    "term_guid": "98765678",
+    "card_guid": "123",
+    "worker_guid": null
+  },
+  {
+    "time": "2020-04-12 11:00:43.736208",
+    "term_guid": "98765678",
+    "card_guid": "1234",
+    "worker_guid": "987"
+  },
+  {
+    "time": "2020-04-12 11:00:46.709496",
+    "term_guid": "98765678",
+    "card_guid": "900",
+    "worker_guid": null
+  },
+  {
+    "time": "2020-04-12 11:00:50.111975",
+    "term_guid": "98765678",
+    "card_guid": "500",
+    "worker_guid": null
+  },
+  {
+    "time": "2020-04-12 11:00:56.711011",
+    "term_guid": "98765678",
+    "card_guid": "1234",
+    "worker_guid": "987"
+  },
+  {
+    "time": "2020-04-12 11:01:15.307534",
+    "term_guid": "98765678",
+    "card_guid": "1234",
+    "worker_guid": "987"
+  },
+  {
+    "time": "2020-04-12 11:10:23.019795",
+    "term_guid": "123414",
+    "card_guid": "1234",
+    "worker_guid": "987"
+  },
+  {
+    "time": "2020-04-12 11:10:25.687508",
+    "term_guid": "123414",
+    "card_guid": "987",
+    "worker_guid": null
+  },
+  {
+    "time": "2020-04-12 11:10:47.324895",
+    "term_guid": "123414",
+    "card_guid": "1234",
+    "worker_guid": "987"
+  },
+  {
+    "time": "2020-04-12 11:13:13.031619",
+    "term_guid": "98765678",
+    "card_guid": "1234",
+    "worker_guid": "987"
+  },
+  {
+    "time": "2020-04-12 11:13:21.095322",
+    "term_guid": "98765678",
+    "card_guid": "876",
+    "worker_guid": null
+  },
+  {
+    "time": "2020-04-12 11:13:25.495564",
+    "term_guid": "98765678",
+    "card_guid": "1234",
+    "worker_guid": "987"
+  },
+  {
+    "time": "2020-04-12 11:13:33.385898",
+    "term_guid": "98765678",
+    "card_guid": "432",
+    "worker_guid": null
+  },
+  {
+    "time": "2020-04-12 11:14:04.036609",
+    "term_guid": "98765678",
+    "card_guid": "123",
+    "worker_guid": null
+  },
+  {
+    "time": "2020-04-12 11:14:11.792300",
+    "term_guid": "98765678",
+    "card_guid": "007",
+    "worker_guid": null
   }
 ]

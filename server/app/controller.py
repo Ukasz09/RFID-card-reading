@@ -3,6 +3,8 @@ from app.logic.server import Server, DataInputError
 import app.cli as ui
 import paho.mqtt.client as mqtt
 
+BROKER_ADDRESS = "localhost"
+
 
 def read_literal(prompt):
     """
@@ -33,9 +35,10 @@ def read_digit(prompt):
 class ServerController:
     def __init__(self):
         self.server = Server()
-        self.__broker_address = "127.0.0.1"
+        self.__broker_address = BROKER_ADDRESS
         self.__client = mqtt.Client("SERVER_CONTROLLER")
         self.__server_active = True
+        self.tracking_activity = False
 
     def run(self):
         """
@@ -57,18 +60,20 @@ class ServerController:
     def process_message(self, client, userdata, message):
         message_decoded = (str(message.payload.decode("utf-8"))).split(".")
         if self.terminal_reading_msg(message_decoded):
-            term_msg = ""
-            for k in self.server.get_terminals().keys():
-                term_msg += k
-                term_msg += "."
-            self.__client.publish("app/terminal", term_msg)
-            print(message_decoded[0])  # todo
+            self.__client.publish("app/terminal", self.get_terminals_msg())
         elif self.card_reading_msg(message_decoded):
-            print(message_decoded[0])  # todo
             card_owner = self.server.register_card_usage(message_decoded[0], message_decoded[1])
-            self.show_card_usage_msg(card_owner)
+            if self.tracking_activity:
+                self.show_card_usage_msg(card_owner)
         else:
             ui.show_msg(message_decoded[0])
+
+    def get_terminals_msg(self):
+        term_msg = ""
+        for k in self.server.get_terminals().keys():
+            term_msg += k
+            term_msg += "."
+        return term_msg[:-1]
 
     def card_reading_msg(self, message_decoded):
         return message_decoded[0] != "Terminal connected" and message_decoded[0] != "Terminal disconnected"
@@ -137,6 +142,8 @@ class ServerController:
             self.show_data(self.server.get_terminals().values())
         elif option == ui.ServerMenu.generate_reports.number:
             self.show_reports_generate_menu()
+        elif option == ui.ServerMenu.tracking_activity.number:
+            self.show_tracking_activity_menu()
         else:
             self.show_incorrect_menu_option_msg()
         ui.read_data(ui.WAIT_FOR_INPUT_MSG)
@@ -267,6 +274,15 @@ class ServerController:
             self.show_worker_with_time_report(generated_data)
         else:
             self.show_incorrect_menu_option_msg()
+
+    def show_tracking_activity_menu(self):
+        self.tracking_activity = True
+        ui.show_msg(ui.TRACKING_ACTIVITY_MENU)
+        ui.show_msg(ui.NEW_SESSION_SEPARATOR_MSG)
+        user_input = input()
+        while user_input != "0":
+            user_input = input()
+        self.tracking_activity = False
 
     def show_worker_with_time_report(self, tuple_list):
         """

@@ -1,7 +1,7 @@
 import app.cli as ui
 import paho.mqtt.client as mqtt
 
-BROKER_ADDRESS = "127.0.0.1"
+BROKER_ADDRESS = "localhost"
 EXIT_BTN = ""
 
 
@@ -23,7 +23,6 @@ class ClientController:
         ui.show_data(ui.WAITING_FOR_RESPONSE_MSG)
         while self.__term_list is None:
             pass
-
         self.check_any_terminal_registered()
         ui.show_data(ui.TERMINALS_READED_CORRECTLY)
         self.__current_term_guid = self.choose_terminal()
@@ -46,17 +45,14 @@ class ClientController:
         self.__client.loop_start()
 
     def process_message(self, client, userdata, message):
-        print("OTRZYMAM")
         if self.__not_logged:
             self.__term_list = (str(message.payload.decode("utf-8"))).split(".")
-        print("ZDEKOD: ", message[0])
-        print("TERM:", self.__term_list)
 
     def connect_to_broker(self):
         self.__client.connect(self.__broker_address)
         self.__client.subscribe("app/terminal")
         self.__client.on_message = self.process_message
-        self.__client.publish("app/server", "Terminal connected")
+        self.__client.publish("app/server", "Terminal connected:")
 
     def disconnect_from_broker(self):
         self.__client.publish("app/server", "Terminal disconnected")
@@ -87,6 +83,8 @@ class ClientController:
         while term_guid not in self.__term_list:
             ui.show_data(term_guid + ": " + ui.NOT_FOUND_TERMINAL_MSG)
             ui.show_data(ui.NEW_SESSION_SEPARATOR_MSG)
+            ui.show_data(ui.TERMINALS_MENU)
+            ui.show_data(self.__term_list)
             term_guid = ui.read_data(ui.USER_TERMINALS_INPUT)
         return term_guid
 
