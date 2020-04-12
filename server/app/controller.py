@@ -1,6 +1,7 @@
 from datetime import datetime
 from app.logic.server import Server, DataInputError
 import app.cli as ui
+import paho.mqtt.client as mqtt
 
 
 def read_literal(prompt):
@@ -29,59 +30,53 @@ def read_digit(prompt):
     return digit
 
 
-class ClientController:
+class ServerController:
     def __init__(self):
         self.server = Server()
-        self.terminal = None
-
-    def setup(self):
-        """
-        Prepare client machine as specific terminal
-        """
-        self.check_any_terminal_registered()
-        self.terminal = self.get_terminal_from_user()
-
-    def check_any_terminal_registered(self):
-        """
-        Check if at least one terminal is added in database. If not exit program
-        :return: True - at least one terminal is added in database, False - otherwise
-        """
-        if not self.server.is_any_terminal_registered():
-            ui.show_msg(ui.NOT_REGISTERED_ANY_TERMINAL_MSG)
-            ui.read_data(ui.WAIT_FOR_INPUT_MSG)
-            exit(0)
-
-    def get_terminal_from_user(self):
-        """
-        Readed terminal GUID until not find it in database
-        :return: Terminal from databse with given GUID from user input
-        """
-        term_guid = ui.read_data(ui.TERMINAL_GUID_INPUT_MSG)
-        while not self.server.terminal_in_database(term_guid):
-            ui.show_msg(term_guid + ": " + ui.NOT_FOUND_TERMINAL_MSG)
-            ui.show_msg(ui.NEW_SESSION_SEPARATOR_MSG)
-            term_guid = ui.read_data(ui.TERMINAL_GUID_INPUT_MSG)
-        return self.server.get_terminals()[term_guid]
+        self.__broker_address = "127.0.0.1"
+        self.__client = mqtt.Client("SERVER_CONTROLLER")
+        self.__server_active = True
 
     def run(self):
         """
-        Run client application. Executed in loop until specific exit input not given
+        Run server application. Executed in loop until specific exit input given
         """
-        self.setup()
-        while True:
-            ui.show_msg(ui.CARD_SCAN_PROMPT_MSG)
-            card_guid = self.terminal.scan_card()
-            if card_guid == "":
-                exit(0)
-            self.register_card_usage(card_guid)
+        self.connect_to_broker()
+        while self.__server_active:
+            ui.ServerMenu.show()
+            menu_option = self.get_menu_option()
+            self.open_menu_option(menu_option)
+        self.disconnect_from_broker()
 
-    def register_card_usage(self, card_guid):
-        """
-        Register RFID card usage in database and save results in database and show in CLI
-        :param card_guid:
-        """
-        ui.show_msg(ui.CARD_SCANNED_PROPERLY_MSG)
-        card_owner = self.server.register_card_usage(card_guid, self.terminal.term_guid)
+    def connect_to_broker(self):
+        self.__client.connect(self.__broker_address)
+        self.__client.on_message = self.process_message
+        self.__client.subscribe("app/server")
+        self.__client.loop_start()
+
+    def process_message(self, client, userdata, message):
+        message_decoded = (str(message.payload.decode("utf-8"))).split(".")
+        if self.terminal_reading_msg(message_decoded):
+            term_msg = ""
+            for k in self.server.get_terminals().keys():
+                term_msg += k
+                term_msg += "."
+            self.__client.publish("app/terminal", term_msg)
+            print(message_decoded[0])  # todo
+        elif self.card_reading_msg(message_decoded):
+            print(message_decoded[0])  # todo
+            card_owner = self.server.register_card_usage(message_decoded[0], message_decoded[1])
+            self.show_card_usage_msg(card_owner)
+        else:
+            ui.show_msg(message_decoded[0])
+
+    def card_reading_msg(self, message_decoded):
+        return message_decoded[0] != "Terminal connected" and message_decoded[0] != "Terminal disconnected"
+
+    def terminal_reading_msg(self, message_decoded):
+        return message_decoded[0] == "terminals_reading"
+
+    def show_card_usage_msg(self, card_owner):
         ui.show_msg(ui.CARD_USAGE_REGISTERED_MSG)
         if card_owner is None:
             ui.show_msg(ui.UNKNOWN_CARD_OWNER_MSG)
@@ -91,19 +86,9 @@ class ClientController:
             ui.show_msg(ui.CARD_OWNER_IS_KNOWN_MSG + owner_guid + ", " + owner_fullname)
         ui.show_msg(ui.NEW_SESSION_SEPARATOR_MSG)
 
-
-class ServerController:
-    def __init__(self):
-        self.server = Server()
-
-    def run(self):
-        """
-        Run server application. Executed in loop until specific exit input given
-        """
-        while True:
-            ui.ServerMenu.show()
-            menu_option = self.get_menu_option()
-            self.open_menu_option(menu_option)
+    def disconnect_from_broker(self):
+        self.__client.loop_stop()
+        self.__client.disconnect()
 
     def get_menu_option(self):
         """
@@ -133,7 +118,7 @@ class ServerController:
         if option == ui.ServerMenu.add_terminal.number:
             self.show_add_terminal_ui()
         elif option == ui.ServerMenu.exit_menu.number:
-            exit(0)
+            self.__server_active = False
         elif option == ui.ServerMenu.remove_terminal.number:
             self.show_remove_terminal_ui()
         elif option == ui.ServerMenu.add_worker.number:

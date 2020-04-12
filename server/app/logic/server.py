@@ -1,14 +1,11 @@
-from app.logic.terminal import Terminal
 from app.database_connection.local_database import LocalDatabase
+from app.logic.terminal import Terminal
 from app.logic.worker import Worker
 from app.logic.registry_log import RegistryLog
 from datetime import datetime
 
-# terminal_json = "../data/terminals.json"
 terminal_json = "data/terminals.json"
-# workers_json = "../data/workers.json"
 workers_json = "data/workers.json"
-# logs_json = "../data/registrations.json"
 logs_json = "data/registrations.json"
 
 
