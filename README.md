@@ -26,10 +26,6 @@ Run shell script `run_linux.sh`
 ✅ Documentation <br/>
 ✅ MVC (simplified) <br/>
 
-**Code overview:**
-<br/><br/>
-✔️ around 1000 lines of code  <br/>
-
 ___
 ## 📫 Contact 
 Created by <br/>
