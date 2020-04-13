@@ -18,7 +18,7 @@ For more: see `screenshots` directories
 ## How to use it
 1. Install required packages (MQTT) <br/>
 
-```python
+```bash
 pip install -r requirements.txt --user
 ```
 
@@ -32,6 +32,16 @@ Run bash script `run_windows.bat`
 - Linux 
 
 Run shell script `run_linux.sh` 
+
+## Documentation and Report
+
+To open documentation:
+- open `server` or `client` directory
+- open `docs\app` directories
+- open `index.html` file
+
+You can also find my project report (PL language)
+- `Report_PL.pdf` 
 
 ## Software design stuff
 ✅ Documentation <br/>
