@@ -29,7 +29,6 @@ class ClientController:
         """
         self.setup()
         self.read_terminal()
-
         while self.__client_active:
             ui.show_data(ui.SCAN_CARD_PROMPT)
             card_guid = self.scan_card()

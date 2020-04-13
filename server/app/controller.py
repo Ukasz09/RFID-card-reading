@@ -102,6 +102,8 @@ class ServerController:
         for k in self.server.get_terminals().keys():
             if not self.server.terminal_is_engaged(k):
                 term_msg += (k + ".")
+        if term_msg == "":
+            return term_msg
         return term_msg[:-1]  # skipping last dot
 
     def terminal_chosen(self, msg_decoded):
