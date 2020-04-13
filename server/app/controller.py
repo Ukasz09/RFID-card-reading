@@ -59,21 +59,30 @@ class ServerController:
         self.disconnect_from_broker()
 
     def connect_to_broker(self):
+        """
+        Connect via MQTT and subscribe `server` topic
+        """
         self.__client.connect(self.__broker_address)
         self.__client.on_message = self.process_message
         self.__client.subscribe(SERVER_TOPIC)
         self.__client.loop_start()
 
     def process_message(self, client, userdata, message):
+        """
+        Decode and process message from client (terminals list query, terminal connecting, terminal selected, RFID usage)
+        :param message: message to process
+        """
         message_decoded = (str(message.payload.decode("utf-8"))).split(".")
         if message_decoded[0] == TERM_READING_QUERY:
             self.__client.publish(TERMINAL_TOPIC, self.available_term_query())
         elif message_decoded[0] == TERM_CONNECTING_QUERY:
-            ui.show_msg(message_decoded[0])
-            ui.show_msg(ui.SEPARATOR)
+            if self.tracking_activity:
+                ui.show_msg(message_decoded[0])
+                ui.show_msg(ui.SEPARATOR)
         elif message_decoded[0] == TERM_DISCONNECTING_QUERY:
-            ui.show_msg(message_decoded[0])
-            ui.show_msg(ui.SEPARATOR)
+            if self.tracking_activity:
+                ui.show_msg(message_decoded[0])
+                ui.show_msg(ui.SEPARATOR)
             self.server.set_terminal_engage(message_decoded[1], False)
         elif message_decoded[0] == TERM_SELECTED_QUERY:
             self.terminal_chosen(message_decoded)
@@ -86,6 +95,9 @@ class ServerController:
             ui.show_msg("Unknown query")
 
     def available_term_query(self):
+        """
+        :return: message with available terminals (only not engaged)
+        """
         term_msg = ""
         for k in self.server.get_terminals().keys():
             if not self.server.terminal_is_engaged(k):
@@ -93,10 +105,22 @@ class ServerController:
         return term_msg[:-1]  # skipping last dot
 
     def terminal_chosen(self, msg_decoded):
+        """
+        Set terminal, with ID from message, marked as engaged and show message
+        :param msg_decoded: message to decode
+        :return:
+        """
         self.server.set_terminal_engage(msg_decoded[2], True)
-        ui.show_msg(msg_decoded[1] + msg_decoded[2])
+        if self.tracking_activity:
+            ui.show_msg(msg_decoded[1] + msg_decoded[2])
 
     def show_card_usage_msg(self, card_guid, card_owner, terminal_id):
+        """
+        Show information to console about RFID card usage
+        :param card_guid: GUID of RFID card
+        :param card_owner: card owner
+        :param terminal_id: used terminal ID
+        """
         ui.show_msg(ui.CARD_USAGE_REGISTERED)
         ui.show_msg("Card GUID= " + card_guid)
         if card_owner is None:
@@ -109,6 +133,10 @@ class ServerController:
         ui.show_msg(ui.SEPARATOR)
 
     def disconnect_from_broker(self):
+        """
+        Disconnect server from MQTT
+        :return:
+        """
         self.__client.loop_stop()
         self.__client.disconnect()
 
@@ -293,6 +321,9 @@ class ServerController:
             self.show_incorrect_menu_option_msg()
 
     def show_tracking_activity_menu(self):
+        """
+        Show console panel in which appeared on runtime current activity logs noticed on server
+        """
         self.tracking_activity = True
         ui.show_msg(ui.TRACKING_ACTIVITY_MENU)
         ui.show_msg(ui.SEPARATOR)
