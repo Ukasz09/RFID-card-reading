@@ -18,33 +18,30 @@ def show_msg(msg):
     print(msg)
 
 
-# CLIENT
-TERMINAL_GUID_INPUT_MSG = "Enter terminal GUID: "
-TERMINAL_NAME_INPUT_MSG = "Enter terminal name: "
-CARD_USAGE_REGISTERED_MSG = "Saved in database usage of RFID card"
-UNKNOWN_CARD_OWNER_MSG = "Card owner unknown"
-CARD_OWNER_IS_KNOWN_MSG = "Card owner is: "
-NEW_SESSION_SEPARATOR_MSG = "\n___________________________________________________________________________________\n"
-WAIT_FOR_INPUT_MSG = "Press any key ..."
-
-# SERVER
-CHOOSE_MENU_OPTION_MSG = "Choose menu option: "
-UNKNOWN_OPTION_MSG = "Given unknown menu option"
-ADDED_TERMINAL_MSG = "Added terminal to server database"
-ADDED_WORKER_MSG = "Added worker to server database"
-REMOVED_TERMINAL_MSG = "Removed terminal from server database"
-WORKER_NAME_INPUT_MSG = "Enter worker name: "
-WORKER_SURNAME_INPUT_MSG = "Enter worker surname: "
-WORKER_ID_INPUT_MSG = "Enter worker GUID: "
-CARD_ID_INPUT_MSG = "Enter card GUID: "
-REMOVED_WORKER_MSG = "Removed worker from server database"
-REMOVED_CARD_MSG = "Removed card from worker: "
-ADDED_CARD_TO_WORKER_MSG = "Assigned card to worker"
-EMPTY_MSG = "Empty - nothing to show"
-INCORRECT_DATE_FORMAT_MSG = "Incorrect date value or format - should be YYYY-MM-DD, e.g. "
-DATE_INPUT_MSG = "Enter date in format YYYY-MM-DD (or nothing for choosing current day) and press enter: "
-INCORRECT_DIGIT_INPUT_MSG = "Incorrect input - must be digit"
-INCORRECT_LITERALS_INPUT_MSG = "Incorrect input - cannot be empty or contain digit"
+TERM_GUID_INPUT = "Enter terminal GUID: "
+TERM_NAME_INPUT = "Enter terminal name: "
+CARD_USAGE_REGISTERED = "Saved in database usage of RFID card"
+UNKNOWN_CARD_OWNER = "Card owner unknown"
+CARD_OWNER_IS_KNOWN = "Card owner is: "
+SEPARATOR = "\n___________________________________________________________________________________\n"
+WAIT_FOR_INPUT = "Press any key ..."
+CHOOSE_MENU_OPTION = "Choose menu option: "
+UNKNOWN_OPTION = "Given unknown menu option"
+ADDED_TERM = "Added terminal to server database"
+ADDED_WORKER = "Added worker to server database"
+REMOVED_TERM = "Removed terminal from server database"
+WORKER_NAME_INPUT = "Enter worker name: "
+WORKER_SURNAME_INPUT = "Enter worker surname: "
+WORKER_ID_INPUT = "Enter worker GUID: "
+CARD_ID_INPUT = "Enter card GUID: "
+REMOVED_WORKER = "Removed worker from server database"
+REMOVED_CARD = "Removed card from worker: "
+ADDED_CARD = "Assigned card to worker"
+EMPTY = "Empty - nothing to show"
+INCORRECT_DATE_FORMAT = "Incorrect date value or format - should be YYYY-MM-DD, e.g. "
+DATE_INPUT = "Enter date in format YYYY-MM-DD (or nothing for choosing current day) and press enter: "
+INCORRECT_DIGIT_INPUT = "Incorrect input - must be digit"
+INCORRECT_LITERALS_INPUT = "Incorrect input - cannot be empty or contain digit"
 TRACKING_ACTIVITY_MENU = "Tracking activity on server. Press 0 to exit"
 
 ServerMenuTuple = namedtuple('Menu', ['number', 'display_string'])
@@ -83,10 +80,10 @@ class ServerMenu(Enum):
         """
         Show server menu in CLI
         """
-        print(NEW_SESSION_SEPARATOR_MSG)
+        print(SEPARATOR)
         for s in ServerMenu:
             print(s.number, s.display_string, sep=") ")
-        print(NEW_SESSION_SEPARATOR_MSG)
+        print(SEPARATOR)
 
 
 class ServerReportsMenu(Enum):
@@ -115,7 +112,7 @@ class ServerReportsMenu(Enum):
         """
         Show in CLI, server submenu for report generations
         """
-        print(NEW_SESSION_SEPARATOR_MSG)
+        print(SEPARATOR)
         for s in ServerReportsMenu:
             print(s.number, s.display_string, sep=") ")
-        print(NEW_SESSION_SEPARATOR_MSG)
+        print(SEPARATOR)

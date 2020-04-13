@@ -170,6 +170,15 @@ class Server:
         """
         return self.__terminals_dict
 
+    def terminal_is_engaged(self, term_GUID):
+        if self.terminal_in_database(term_GUID):
+            return self.__terminals_dict[term_GUID].is_engaged
+        return False
+
+    def set_terminal_engage(self, term_GUID, engaged):
+        if self.terminal_in_database(term_GUID):
+            self.__terminals_dict[term_GUID].is_engaged = engaged
+
     def report_log_from_day(self, with_saving, date=datetime.now()):
         """
         Generate report with all logs added in given date
