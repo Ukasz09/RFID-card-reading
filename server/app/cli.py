@@ -21,15 +21,11 @@ def show_msg(msg):
 # CLIENT
 TERMINAL_GUID_INPUT_MSG = "Enter terminal GUID: "
 TERMINAL_NAME_INPUT_MSG = "Enter terminal name: "
-CARD_SCAN_PROMPT_MSG = "Scan your RFID card"
-CARD_SCANNED_PROPERLY_MSG = "Card scanned properly"
 CARD_USAGE_REGISTERED_MSG = "Saved in database usage of RFID card"
 UNKNOWN_CARD_OWNER_MSG = "Card owner unknown"
 CARD_OWNER_IS_KNOWN_MSG = "Card owner is: "
-NOT_REGISTERED_ANY_TERMINAL_MSG = "Not found any registered terminal in database. Ask server admin for adding one: "
 NEW_SESSION_SEPARATOR_MSG = "\n___________________________________________________________________________________\n"
 WAIT_FOR_INPUT_MSG = "Press any key ..."
-NOT_FOUND_TERMINAL_MSG = "Terminal not assigned in database"
 
 # SERVER
 CHOOSE_MENU_OPTION_MSG = "Choose menu option: "
@@ -47,7 +43,6 @@ ADDED_CARD_TO_WORKER_MSG = "Assigned card to worker"
 EMPTY_MSG = "Empty - nothing to show"
 INCORRECT_DATE_FORMAT_MSG = "Incorrect date value or format - should be YYYY-MM-DD, e.g. "
 DATE_INPUT_MSG = "Enter date in format YYYY-MM-DD (or nothing for choosing current day) and press enter: "
-SAVED_REPORT_IN_DATABASE_MSG = "Saved report in database server"
 INCORRECT_DIGIT_INPUT_MSG = "Incorrect input - must be digit"
 INCORRECT_LITERALS_INPUT_MSG = "Incorrect input - cannot be empty or contain digit"
 TRACKING_ACTIVITY_MENU = "Tracking activity on server. Press 0 to exit"

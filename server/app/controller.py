@@ -4,7 +4,16 @@ import app.cli as ui
 import paho.mqtt.client as mqtt
 
 BROKER_ADDRESS = "localhost"
+SERVER_TOPIC = "app/server"
+TERMINAL_TOPIC = "app/terminal"
+TERM_READING_QUERY = "Terminals reading"
+TERM_CONNECTING_QUERY = "Terminal connected"
+TERM_DISCONNECTING_QUERY = "Terminal disconnected"
+TERM_SELECTED_QUERY = "Terminal selected"
+CARD_READING_QUERY = "Card readed"
 
+
+# todo: dodanie wolnych i zajetych terminali
 
 def read_literal(prompt):
     """
@@ -54,41 +63,44 @@ class ServerController:
     def connect_to_broker(self):
         self.__client.connect(self.__broker_address)
         self.__client.on_message = self.process_message
-        self.__client.subscribe("app/server")
+        self.__client.subscribe(SERVER_TOPIC)
         self.__client.loop_start()
 
     def process_message(self, client, userdata, message):
         message_decoded = (str(message.payload.decode("utf-8"))).split(".")
-        if self.terminal_reading_msg(message_decoded):
-            self.__client.publish("app/terminal", self.get_terminals_msg())
-        elif self.card_reading_msg(message_decoded):
-            card_owner = self.server.register_card_usage(message_decoded[0], message_decoded[1])
+        if message_decoded[0] == TERM_READING_QUERY:
+            self.__client.publish(TERMINAL_TOPIC, self.available_term_query())
+        elif self.config_term_query(message_decoded[0]):
             if self.tracking_activity:
-                self.show_card_usage_msg(card_owner)
+                for msg in message_decoded:
+                    ui.show_msg(msg)
+                ui.show_msg(ui.NEW_SESSION_SEPARATOR_MSG)
+        elif message_decoded[0] == CARD_READING_QUERY:
+            card_owner = self.server.register_card_usage(message_decoded[1], message_decoded[2])
+            if self.tracking_activity:
+                self.show_card_usage_msg(message_decoded[1], card_owner, message_decoded[2])
         else:
-            ui.show_msg(message_decoded[0])
+            ui.show_msg("Unknown query")
 
-    def get_terminals_msg(self):
+    def available_term_query(self):
         term_msg = ""
         for k in self.server.get_terminals().keys():
-            term_msg += k
-            term_msg += "."
-        return term_msg[:-1]
+            term_msg += (k + ".")
+        return term_msg[:-1]  # skipping last dot
 
-    def card_reading_msg(self, message_decoded):
-        return message_decoded[0] != "Terminal connected" and message_decoded[0] != "Terminal disconnected"
+    def config_term_query(self, message):
+        return message == TERM_CONNECTING_QUERY or message == TERM_DISCONNECTING_QUERY or message == TERM_SELECTED_QUERY
 
-    def terminal_reading_msg(self, message_decoded):
-        return message_decoded[0] == "terminals_reading"
-
-    def show_card_usage_msg(self, card_owner):
+    def show_card_usage_msg(self, card_guid, card_owner, terminal_id):
         ui.show_msg(ui.CARD_USAGE_REGISTERED_MSG)
+        ui.show_msg("Card GUID= " + card_guid)
         if card_owner is None:
             ui.show_msg(ui.UNKNOWN_CARD_OWNER_MSG)
         else:
             owner_guid = card_owner.worker_guid
             owner_fullname = card_owner.name + " " + card_owner.surname
             ui.show_msg(ui.CARD_OWNER_IS_KNOWN_MSG + owner_guid + ", " + owner_fullname)
+        ui.show_msg("Terminal ID= " + terminal_id)
         ui.show_msg(ui.NEW_SESSION_SEPARATOR_MSG)
 
     def disconnect_from_broker(self):

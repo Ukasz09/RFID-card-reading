@@ -142,7 +142,7 @@ class Server:
         :param worker_guid: GUID of worker to whose belong card
         """
         time = datetime.now()
-        self.__logs_dict[time] = RegistryLog(time, term_guid, card_guid, worker_guid)
+        self.__logs_dict[time.__str__()] = RegistryLog(time.__str__(), term_guid, card_guid, worker_guid)
         self.__database.write_logs(self.__logs_dict.values())
 
     def is_any_terminal_registered(self):
