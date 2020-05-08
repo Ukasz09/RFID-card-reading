@@ -1,6 +1,6 @@
 def read_data(prompt=""):
     """
-    Read data from user vi Command Line Interface (CLI)
+    Read config from user vi Command Line Interface (CLI)
     :param prompt: Prompt for input
     """
     return input(prompt)
@@ -16,7 +16,7 @@ def show_data(msg):
 
 SCAN_CARD_PROMPT = "Scan your RFID card"
 CARD_SCANNED = "RFID card scanned properly"
-NOT_FOUND_TERMINAL = "Not found any registered terminal in database or all terminals are engaged. Contact with server administrator"
+NOT_FOUND_TERMINAL = "Not found any registered terminal in database or all terminals are engaged. Contact with server admin"
 SEPARATOR = "\n___________________________________________________________________________________\n"
 INPUT_WAITING = "Press any key ..."
 INCORRECT_TERMINAL = "Terminal not assigned to server database"

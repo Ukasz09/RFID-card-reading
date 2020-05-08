@@ -1,27 +1,31 @@
 import app.cli as ui
 import paho.mqtt.client as mqtt
 import time
+import json
 
-BROKER_ADDRESS = "localhost"
 EXIT_BTN = ""
-TERMINAL_TOPIC = "app/terminal"
-SERVER_TOPIC = "app/server"
-
 TERM_READING_QUERY = "Terminals reading"
 TERM_CONNECTING_QUERY = "Terminal connected"
 TERM_DISCONNECTING_QUERY = "Terminal disconnected"
 TERM_SELECTED_QUERY = "Terminal selected"
-CARD_READING_QUERY = "Card readed"
+CARD_READING_QUERY = "Card read"
+CONFIG_PATH = "config/conf.json"
 
 
 class ClientController:
     def __init__(self):
         self.__client_active = True
         self.__not_logged = True
-        self.__broker_address = BROKER_ADDRESS
         self.__client = mqtt.Client("CLIENT CONTROLLER")
         self.__term_guid = None
         self.__term_list = None
+        self.config = ClientController.read(CONFIG_PATH)
+
+    @staticmethod
+    def read(path):
+        with open(path, "r") as f:
+            content = f.read()
+        return json.loads(content)
 
     def run(self):
         """
@@ -49,10 +53,12 @@ class ClientController:
         """
         Connect to server using MQTT, subscribe `terminal` topic and send message to server about connecting
         """
-        self.__client.connect(self.__broker_address)
-        self.__client.subscribe(TERMINAL_TOPIC)
+        self.__client.tls_set(self.config["cert_path"])
+        self.__client.username_pw_set(username=self.config["username"], password=self.config["password"])
+        self.__client.connect(self.config["broker"], self.config["port"])
+        self.__client.subscribe(self.config["term_topic"])
         self.__client.on_message = self.process_message
-        self.__client.publish(SERVER_TOPIC, TERM_CONNECTING_QUERY)
+        self.__client.publish(self.config["server_topic"], TERM_CONNECTING_QUERY)
 
     def process_message(self, client, userdata, message):
         """
@@ -67,14 +73,14 @@ class ClientController:
         """
         Disconnect client terminal from server
         """
-        self.__client.publish(SERVER_TOPIC, TERM_DISCONNECTING_QUERY + "." + self.__term_guid)
+        self.__client.publish(self.config["server_topic"], TERM_DISCONNECTING_QUERY + "." + self.__term_guid)
         self.__client.disconnect()
 
     def query_available_terminals(self):
         """
         Send query to server about available terminals
         """
-        self.__client.publish(SERVER_TOPIC, TERM_READING_QUERY)
+        self.__client.publish(self.config["server_topic"], TERM_READING_QUERY)
 
     def read_terminal(self):
         """
@@ -86,7 +92,7 @@ class ClientController:
         ui.show_data(ui.TERMINALS_READED)
         self.__term_guid = self.choose_terminal()
         query = TERM_SELECTED_QUERY + "." + "ID of connected terminal:." + self.__term_guid
-        self.__client.publish(SERVER_TOPIC, query)
+        self.__client.publish(self.config["server_topic"], query)
 
     def wait_for_server_response(self):
         """
@@ -136,7 +142,7 @@ class ClientController:
         :param card_guid: RFID card guid
         :param terminal_guid: terminal ID
         """
-        self.__client.publish(SERVER_TOPIC, CARD_READING_QUERY + "." + card_guid + "." + terminal_guid)
+        self.__client.publish(self.config["server_topic"], CARD_READING_QUERY + "." + card_guid + "." + terminal_guid)
 
     def scan_card(self):
         """

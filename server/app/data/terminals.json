@@ -1,10 +1,12 @@
 [
   {
     "term_guid": "123414",
-    "name": "STATION 1"
+    "name": "STATION 1",
+    "is_engaged": false
   },
   {
     "term_guid": "98765678",
-    "name": "Office Hall"
+    "name": "Office Hall",
+    "is_engaged": false
   }
 ]

@@ -10,8 +10,12 @@ def write(path, objects_list):
     methods_dict_list = []
     for i in objects_list:
         methods_dict_list.append(i.__dict__)
+    write_dict_list(path, methods_dict_list)
+
+
+def write_dict_list(path, dict_list):
     with open(path, "w") as f:
-        json_txt = json.dumps(methods_dict_list, indent=2, default=str)
+        json_txt = json.dumps(dict_list, indent=2, default=str)
         f.write(json_txt)
 
 

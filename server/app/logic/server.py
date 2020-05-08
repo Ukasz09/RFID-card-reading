@@ -30,7 +30,7 @@ class Server:
     def read_workers(path):
         result = {}
         for data in json_data.read(path):
-            result[data["worker_guid"]] = Worker(data["name"], data["surname"], data["cards"])
+            result[data["worker_guid"]] = Worker(data["name"], data["surname"], data["worker_guid"], data["cards"])
         return result
 
     @staticmethod
@@ -50,9 +50,14 @@ class Server:
         json_data.write(self.__conf_dict["logs_path"], self.__logs_dict.values())
 
     @staticmethod
-    def write_reports(name, reports):
-        path = "data/" + name + "terminals.json"
-        json_data.write(path, reports)
+    def write_reports(name, reports_obj):
+        path = "data/" + name + ".json"
+        json_data.write(path, reports_obj)
+
+    @staticmethod
+    def write_reports_dict_list(name, list_of_dict):
+        path = "data/" + name + ".json"
+        json_data.write_dict_list(path, list_of_dict)
 
     # --------------------------------------------------------------------------------------------------------------- #
     def add_term(self, term_guid, term_name):
@@ -301,7 +306,7 @@ class Server:
         if with_saving:
             report_name = "Report_[TIME]_" + date.date().__str__()
             list_of_dict = list(map(lambda tup: {"Worker_GUID": tup[0], "Work_time": tup[1]}, only_positive_work_time))
-            Server.write_reports(report_name, list_of_dict)
+            Server.write_reports_dict_list(report_name, list_of_dict)
         return only_positive_work_time
 
     def general_report(self, with_saving):
@@ -317,5 +322,5 @@ class Server:
         if with_saving:
             report_name = "Report_[GENERAL]_" + datetime.now().__str__()
             list_of_dict = list(map(lambda tup: {"Worker_GUID": tup[0], "Work_time": tup[1]}, work_time_list))
-            Server.write_reports(report_name, list_of_dict)
+            Server.write_reports_dict_list(report_name, list_of_dict)
         return work_time_list

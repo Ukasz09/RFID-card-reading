@@ -7,7 +7,7 @@ TERM_READING_QUERY = "Terminals reading"
 TERM_CONNECTING_QUERY = "Terminal connected"
 TERM_DISCONNECTING_QUERY = "Terminal disconnected"
 TERM_SELECTED_QUERY = "Terminal selected"
-CARD_READING_QUERY = "Card readed"
+CARD_READING_QUERY = "Card read"
 
 
 def read_literal(prompt):
