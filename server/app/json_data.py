@@ -19,17 +19,3 @@ def read(path):
     with open(path, "r") as f:
         content = f.read()
     return json.loads(content)
-
-
-# todo pozbyc sie
-def write_reports_with_tuples(self, tuples_list, report_name):
-    """
-    Save work time result in local database (.json files)
-    :param report_name: filename of new  generated report
-    :param tuples_list:  list of tuples to save in report file
-    """
-    path = "data/" + report_name + ".json"
-    list_of_dict = list(map(lambda tup: {"Worker_GUID": tup[0], "Work_time": tup[1]}, tuples_list))
-    with open(path, "w") as f:
-        json_txt = json.dumps(list_of_dict, indent=2, default=str)
-        f.write(json_txt)

@@ -40,27 +40,41 @@ class Server:
             result[data["time"]] = RegistryLog(data["time"], data["term_guid"], data["card_guid"], data["worker_guid"])
         return result
 
-    def add_terminal(self, term_guid, term_name):
+    def write_terminals(self):
+        json_data.write(self.__conf_dict["terms_path"], self.__term_dict.values())
+
+    def write_workers(self):
+        json_data.write(self.__conf_dict["workers_path"], self.__workers_dict.values())
+
+    def write_logs(self):
+        json_data.write(self.__conf_dict["logs_path"], self.__logs_dict.values())
+
+    @staticmethod
+    def write_reports(name, reports):
+        path = "data/" + name + "terminals.json"
+        json_data.write(path, reports)
+
+    # --------------------------------------------------------------------------------------------------------------- #
+    def add_term(self, term_guid, term_name):
         """
         Add terminal and save it in database
         :param term_guid: GUID of new terminal
         :param term_name: Name assigned to new terminal
         """
-        if term_guid not in self.__terminals_dict:
-            new_term = Terminal(term_guid, term_name)
-            self.__terminals_dict[term_guid] = new_term
-            self.__database.write_terminals(self.__terminals_dict.values())
+        if term_guid not in self.__term_dict:
+            self.__term_dict[term_guid] = Terminal(term_guid, term_name)
+            self.write_terminals()
         else:
             raise DataInputError("Terminal with GUID: " + term_guid + " already exist")
 
-    def remove_terminal(self, term_guid):
+    def remove_term(self, term_guid):
         """
         Remove terminal from database
         :param term_guid:  GUID of terminal to remove
         """
-        if term_guid in self.__terminals_dict:
-            del self.__terminals_dict[term_guid]
-            self.__database.write_terminals(self.__terminals_dict.values())
+        if term_guid in self.__term_dict:
+            del self.__term_dict[term_guid]
+            self.write_terminals()
         else:
             raise DataInputError("Terminal with GUID: " + term_guid + " not exist")
 
@@ -71,10 +85,9 @@ class Server:
         :param surname: Surname of new worker
         :param worker_guid: GUID of new worker
         """
-        new_worker = Worker(name, surname, worker_guid)
         if worker_guid not in self.__workers_dict:
-            self.__workers_dict[worker_guid] = new_worker
-            self.__database.write_workers(self.__workers_dict.values())
+            self.__workers_dict[worker_guid] = Worker(name, surname, worker_guid)
+            self.write_workers()
         else:
             raise DataInputError("Worker with GUID: " + worker_guid + " already exist in database")
 
@@ -85,11 +98,11 @@ class Server:
         """
         if worker_guid in self.__workers_dict:
             del self.__workers_dict[worker_guid]
-            self.__database.write_workers(self.__workers_dict.values())
+            self.write_workers()
         else:
             raise DataInputError("Worker with GUID: " + worker_guid + " not exist")
 
-    def assign_card_to_worker(self, card_guid, worker_guid):
+    def assign_card(self, card_guid, worker_guid):
         """
         Assign RFID card to worker
         :param card_guid: GUID of RFID card to assign
@@ -98,10 +111,10 @@ class Server:
         if worker_guid in self.__workers_dict:
             card_owner = self.get_card_owner(card_guid)
             if card_owner is not None:
-                raise DataInputError(
-                    "Card with GUID: " + card_guid + " already assigned to worker with GUID: " + card_owner.worker_id)
+                err_msg = "Card with GUID: " + card_guid + " already assigned to worker with GUID: " + card_owner.worker_guid
+                raise DataInputError(err_msg)
             self.__workers_dict[worker_guid].cards.append(card_guid)
-            self.__database.write_workers(self.__workers_dict.values())
+            self.write_workers()
         else:
             raise DataInputError("Worker with GUID: " + worker_guid + " not exist")
 
@@ -116,7 +129,7 @@ class Server:
                 return w
         return None
 
-    def unassign_card_from_worker(self, card_guid):
+    def unassign_card(self, card_guid):
         """
         Unassign card which had assigned to worker
         :param card_guid: GUID of RFID card which needs to be unassigned
@@ -124,7 +137,7 @@ class Server:
         for w in self.__workers_dict.values():
             if card_guid in w.cards:
                 w.cards.remove(card_guid)
-                self.__database.write_workers(self.__workers_dict.values())
+                self.write_workers()
                 return w.worker_guid
         raise DataInputError("Card with id: " + card_guid + " hasn't been signed to any worker")
 
@@ -135,9 +148,9 @@ class Server:
         :param term_guid: GUID of used terminal
         :return: Card owner GUID or None if card without assigned owner
         """
-        card_owner = self.get_card_owner(card_guid)
-        if not self.terminal_in_database(term_guid):
+        if not self.term_is_registered(term_guid):
             raise DataInputError("Terminal with id: " + term_guid + " not assigned in database")
+        card_owner = self.get_card_owner(card_guid)
         if card_owner is None:
             owner_guid = None
         else:
@@ -145,13 +158,13 @@ class Server:
         self.register_log(card_guid, term_guid, owner_guid)
         return card_owner
 
-    def terminal_in_database(self, term_guid):
+    def term_is_registered(self, term_guid):
         """
         Check if terminal with given GUID is saved in database
         :param term_guid: GUID of checked terminal
         :return: True - is in database, False - otherwise
         """
-        return term_guid in self.__terminals_dict
+        return term_guid in self.__term_dict
 
     def register_log(self, card_guid, term_guid, worker_guid):
         """
@@ -162,14 +175,14 @@ class Server:
         """
         time = datetime.now()
         self.__logs_dict[time.__str__()] = RegistryLog(time.__str__(), term_guid, card_guid, worker_guid)
-        self.__database.write_logs(self.__logs_dict.values())
+        self.write_logs()
 
-    def is_any_terminal_registered(self):
+    def any_term_registered(self):
         """
         Check if in database is registered any terminal
         :return: True - at least one terminal registerd in database, False - otherwise
         """
-        return bool(self.__terminals_dict)
+        return bool(self.__term_dict)
 
     def get_workers(self):
         """
@@ -177,7 +190,7 @@ class Server:
         """
         return self.__workers_dict
 
-    def get_registered_logs(self):
+    def get_logs(self):
         """
         :return: Registered logs in database
         """
@@ -187,16 +200,19 @@ class Server:
         """
         :return: Registered terminals in database
         """
-        return self.__terminals_dict
+        return self.__term_dict
 
-    def terminal_is_engaged(self, term_GUID):
-        if self.terminal_in_database(term_GUID):
-            return self.__terminals_dict[term_GUID].is_engaged
+    def get_configs(self):
+        return self.__conf_dict
+
+    def terminal_is_engaged(self, term_guid):
+        if self.term_is_registered(term_guid):
+            return self.__term_dict[term_guid].is_engaged
         return False
 
-    def set_terminal_engage(self, term_GUID, engaged):
-        if self.terminal_in_database(term_GUID):
-            self.__terminals_dict[term_GUID].is_engaged = engaged
+    def set_terminal_engage(self, term_guid, engaged):
+        if self.term_is_registered(term_guid):
+            self.__term_dict[term_guid].is_engaged = engaged
 
     def report_log_from_day(self, with_saving, date=datetime.now()):
         """
@@ -211,7 +227,7 @@ class Server:
 
         if with_saving:
             report_name = "Report_[LOGS]_" + date.date().__str__()
-            self.__database.write_reports_with_objects(filtered_logs, report_name)
+            Server.write_reports(report_name, filtered_logs)
         return filtered_logs
 
     def report_log_from_day_worker(self, worker_guid, with_saving, date=datetime.now()):
@@ -227,7 +243,7 @@ class Server:
 
         if with_saving:
             report_name = "Report_[LOGS]_[" + worker_guid + "]_" + date.date().__str__()
-            self.__database.write_reports_with_objects(filtered_logs, report_name)
+            Server.write_reports(report_name, filtered_logs)
         return filtered_logs
 
     def general_log_for_worker(self, worker_guid):
@@ -284,7 +300,8 @@ class Server:
         only_positive_work_time = list(filter(lambda time: time[1] > time[1].min, work_time_list))
         if with_saving:
             report_name = "Report_[TIME]_" + date.date().__str__()
-            self.__database.write_reports_with_tuples(only_positive_work_time, report_name)
+            list_of_dict = list(map(lambda tup: {"Worker_GUID": tup[0], "Work_time": tup[1]}, only_positive_work_time))
+            Server.write_reports(report_name, list_of_dict)
         return only_positive_work_time
 
     def general_report(self, with_saving):
@@ -299,5 +316,6 @@ class Server:
             work_time_list.append((w.worker_guid, general_work_time))
         if with_saving:
             report_name = "Report_[GENERAL]_" + datetime.now().__str__()
-            self.__database.write_reports_with_tuples(work_time_list, report_name)
+            list_of_dict = list(map(lambda tup: {"Worker_GUID": tup[0], "Work_time": tup[1]}, work_time_list))
+            Server.write_reports(report_name, list_of_dict)
         return work_time_list

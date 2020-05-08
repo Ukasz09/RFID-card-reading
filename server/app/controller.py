@@ -3,9 +3,6 @@ from app.logic.server import Server, DataInputError
 import app.cli as ui
 import paho.mqtt.client as mqtt
 
-BROKER_ADDRESS = "localhost"
-SERVER_TOPIC = "app/server"
-TERMINAL_TOPIC = "app/terminal"
 TERM_READING_QUERY = "Terminals reading"
 TERM_CONNECTING_QUERY = "Terminal connected"
 TERM_DISCONNECTING_QUERY = "Terminal disconnected"
@@ -42,7 +39,6 @@ def read_digit(prompt):
 class ServerController:
     def __init__(self):
         self.server = Server()
-        self.__broker_address = BROKER_ADDRESS
         self.__client = mqtt.Client("SERVER_CONTROLLER")
         self.__server_active = True
         self.tracking_activity = False
@@ -62,11 +58,12 @@ class ServerController:
         """
         Connect via MQTT and subscribe `server` topic
         """
-        self.__client.tls_set("ca.crt")  # todo pozmieniac na wczytywane z configu
-        self.__client.username_pw_set(username='client', password='password')  # todo pozmieniac na wczytywane z configu
-        self.__client.connect(self.__broker_address, 8883)
+        config = self.server.get_configs()
+        self.__client.tls_set(config["cert_path"])
+        self.__client.username_pw_set(username=config["username"], password=config["password"])
+        self.__client.connect(config["broker"], config["port"])
         self.__client.on_message = self.process_message
-        self.__client.subscribe(SERVER_TOPIC)
+        self.__client.subscribe(config["server_topic"])
         self.__client.loop_start()
 
     def process_message(self, client, userdata, message):
@@ -74,49 +71,44 @@ class ServerController:
         Decode and process message from client (terminals list query, terminal connecting, terminal selected, RFID usage)
         :param message: message to process
         """
-        message_decoded = (str(message.payload.decode("utf-8"))).split(".")
-        if message_decoded[0] == TERM_READING_QUERY:
-            self.__client.publish(TERMINAL_TOPIC, self.available_term_query())
-        elif message_decoded[0] == TERM_CONNECTING_QUERY:
-            if self.tracking_activity:
-                ui.show_msg(message_decoded[0])
-                ui.show_msg(ui.SEPARATOR)
-        elif message_decoded[0] == TERM_DISCONNECTING_QUERY:
-            if self.tracking_activity:
-                ui.show_msg(message_decoded[0])
-                ui.show_msg(ui.SEPARATOR)
-            self.server.set_terminal_engage(message_decoded[1], False)
-        elif message_decoded[0] == TERM_SELECTED_QUERY:
-            self.terminal_chosen(message_decoded)
-            ui.show_msg(ui.SEPARATOR)
-        elif message_decoded[0] == CARD_READING_QUERY:
-            card_owner = self.server.register_card_usage(message_decoded[1], message_decoded[2])
-            if self.tracking_activity:
-                self.show_card_usage_msg(message_decoded[1], card_owner, message_decoded[2])
+        decoded = (str(message.payload.decode("utf-8"))).split(".")
+        if decoded[0] == TERM_READING_QUERY:
+            self.term_reading_query()
+        elif decoded[0] == TERM_CONNECTING_QUERY:
+            self.term_connecting_query(decoded[0])
+        elif decoded[0] == TERM_DISCONNECTING_QUERY:
+            self.term_disconnection_query(decoded[0], decoded[1])
+        elif decoded[0] == TERM_SELECTED_QUERY:
+            self.term_selected_query(decoded[1], decoded[2])
+        elif decoded[0] == CARD_READING_QUERY:
+            self.card_reading_query(decoded[1], decoded[2])
         else:
             ui.show_msg("Unknown query")
 
-    def available_term_query(self):
-        """
-        :return: message with available terminals (only not engaged)
-        """
-        term_msg = ""
-        for k in self.server.get_terminals().keys():
-            if not self.server.terminal_is_engaged(k):
-                term_msg += (k + ".")
-        if term_msg == "":
-            return term_msg
-        return term_msg[:-1]  # skipping last dot
+    def term_reading_query(self):
+        self.__client.publish(self.server.get_configs()["term_topic"], self.available_term_query())
 
-    def terminal_chosen(self, msg_decoded):
-        """
-        Set terminal, with ID from message, marked as engaged and show message
-        :param msg_decoded: message to decode
-        :return:
-        """
-        self.server.set_terminal_engage(msg_decoded[2], True)
+    def term_connecting_query(self, msg):
         if self.tracking_activity:
-            ui.show_msg(msg_decoded[1] + msg_decoded[2])
+            ui.show_msg(msg)
+            ui.show_msg(ui.SEPARATOR)
+
+    def term_disconnection_query(self, msg, term_guid):
+        if self.tracking_activity:
+            ui.show_msg(msg)
+            ui.show_msg(ui.SEPARATOR)
+        self.server.set_terminal_engage(term_guid, False)
+
+    def term_selected_query(self, msg, term_guid):
+        self.server.set_terminal_engage(term_guid, True)
+        if self.tracking_activity:
+            ui.show_msg(msg + term_guid)
+        ui.show_msg(ui.SEPARATOR)
+
+    def card_reading_query(self, card_guid, term_guid):
+        card_owner = self.server.register_card_usage(card_guid, term_guid)
+        if self.tracking_activity:
+            self.show_card_usage_msg(card_guid, card_owner, term_guid)
 
     def show_card_usage_msg(self, card_guid, card_owner, terminal_id):
         """
@@ -136,6 +128,18 @@ class ServerController:
         ui.show_msg("Terminal ID= " + terminal_id)
         ui.show_msg(ui.SEPARATOR)
 
+    def available_term_query(self):
+        """
+        :return: message with available terminals (only not engaged)
+        """
+        term_msg = ""
+        for k in self.server.get_terminals().keys():
+            if not self.server.terminal_is_engaged(k):
+                term_msg += (k + ".")
+        if term_msg == "":
+            return term_msg
+        return term_msg[:-1]  # skipping last dot
+
     def disconnect_from_broker(self):
         """
         Disconnect server from MQTT
@@ -151,13 +155,11 @@ class ServerController:
         """
         user_input = input(ui.CHOOSE_MENU_OPTION)
         while not user_input.isdigit():
-            self.show_incorrect_menu_option_msg()
+            self.incorrect_option_msg()
             user_input = input(ui.CHOOSE_MENU_OPTION)
-        menu_option = float(user_input)
+        return float(user_input)
 
-        return menu_option
-
-    def show_incorrect_menu_option_msg(self):
+    def incorrect_option_msg(self):
         """
         Show message in CLI, that given menu option in unknown / incorrect
         """
@@ -186,7 +188,7 @@ class ServerController:
         elif option == ui.ServerMenu.show_workers.number:
             self.show_data(self.server.get_workers().values())
         elif option == ui.ServerMenu.show_logs.number:
-            self.show_data(self.server.get_registered_logs().values())
+            self.show_data(self.server.get_logs().values())
         elif option == ui.ServerMenu.show_terminals.number:
             self.show_data(self.server.get_terminals().values())
         elif option == ui.ServerMenu.generate_reports.number:
@@ -194,7 +196,7 @@ class ServerController:
         elif option == ui.ServerMenu.tracking_activity.number:
             self.show_tracking_activity_menu()
         else:
-            self.show_incorrect_menu_option_msg()
+            self.incorrect_option_msg()
         ui.read_data(ui.WAIT_FOR_INPUT)
 
     def show_add_terminal_ui(self):
@@ -204,7 +206,7 @@ class ServerController:
         term_guid = read_digit(ui.TERM_GUID_INPUT)
         term_name = ui.read_data(ui.TERM_NAME_INPUT)
         try:
-            self.server.add_terminal(term_guid, term_name)
+            self.server.add_term(term_guid, term_name)
         except DataInputError as err:
             ui.show_msg(err.message)
         else:
@@ -216,7 +218,7 @@ class ServerController:
         """
         term_guid = ui.read_data(ui.TERM_GUID_INPUT)
         try:
-            self.server.remove_terminal(term_guid)
+            self.server.remove_term(term_guid)
         except DataInputError as err:
             ui.show_msg(err.message)
         else:
@@ -256,7 +258,7 @@ class ServerController:
         worker_guid = ui.read_data(ui.WORKER_ID_INPUT)
         card_guid = read_digit(ui.CARD_ID_INPUT)
         try:
-            self.server.assign_card_to_worker(card_guid, worker_guid)
+            self.server.assign_card(card_guid, worker_guid)
         except DataInputError as err:
             ui.show_msg(err.message)
         else:
@@ -268,7 +270,7 @@ class ServerController:
         """
         term_id = ui.read_data(ui.CARD_ID_INPUT)
         try:
-            worker_id = self.server.unassign_card_from_worker(term_id)
+            worker_id = self.server.unassign_card(term_id)
         except DataInputError as err:
             ui.show_msg(err.message)
         else:
@@ -295,34 +297,45 @@ class ServerController:
         ui.ServerReportsMenu.show()
         option = self.get_menu_option()
         if option == ui.ServerReportsMenu.report_log_from_day.number:
-            date = self.read_player_date_input()
-            if date is not None:
-                generated_data = self.server.report_log_from_day(True, date)
-                self.show_data(generated_data)
+            self.log_from_day()
         elif option == ui.ServerReportsMenu.report_log_from_day_worker.number:
-            worker_id = ui.read_data(ui.WORKER_ID_INPUT)
-            date = self.read_player_date_input()
-            if date is not None:
-                generated_data = self.server.report_log_from_day_worker(worker_id, True, date)
-                self.show_data(generated_data)
+            self.log_from_day_for_worker()
         elif option == ui.ServerReportsMenu.report_work_time_from_day_worker.number:
-            worker_id = ui.read_data(ui.WORKER_ID_INPUT)
-            date = self.read_player_date_input()
-            if date is not None:
-                generated_data = self.server.report_work_time_from_day_worker(worker_id, date)
-                ui.show_msg(ui.SEPARATOR)
-                ui.show_msg(generated_data)
-                ui.show_msg(ui.SEPARATOR)
+            self.work_time_from_day_for_worker()
         elif option == ui.ServerReportsMenu.report_work_time_from_day.number:
-            date = self.read_player_date_input()
-            if date is not None:
-                generated_data = self.server.report_work_time_from_day(True, date)
-                self.show_worker_with_time_report(generated_data)
+            self.work_time_from_day()
         elif option == ui.ServerReportsMenu.report_general_work_time.number:
-            generated_data = self.server.general_report(True)
-            self.show_worker_with_time_report(generated_data)
+            self.show_worker_with_time_report(self.server.general_report(True))
         else:
-            self.show_incorrect_menu_option_msg()
+            self.incorrect_option_msg()
+
+    def log_from_day(self):
+        date = self.read_player_date_input()
+        if date is not None:
+            generated_data = self.server.report_log_from_day(True, date)
+            self.show_data(generated_data)
+
+    def log_from_day_for_worker(self):
+        worker_id = ui.read_data(ui.WORKER_ID_INPUT)
+        date = self.read_player_date_input()
+        if date is not None:
+            generated_data = self.server.report_log_from_day_worker(worker_id, True, date)
+            self.show_data(generated_data)
+
+    def work_time_from_day_for_worker(self):
+        worker_id = ui.read_data(ui.WORKER_ID_INPUT)
+        date = self.read_player_date_input()
+        if date is not None:
+            generated_data = self.server.report_work_time_from_day_worker(worker_id, date)
+            ui.show_msg(ui.SEPARATOR)
+            ui.show_msg(generated_data)
+            ui.show_msg(ui.SEPARATOR)
+
+    def work_time_from_day(self):
+        date = self.read_player_date_input()
+        if date is not None:
+            generated_data = self.server.report_work_time_from_day(True, date)
+            self.show_worker_with_time_report(generated_data)
 
     def show_tracking_activity_menu(self):
         """

@@ -13,10 +13,10 @@ class RegistryLog:
 
     def __str__(self):
         time_msg = "Time: " + self.time + "\n"
-        terminal_msg = "Terminal GUID: " + self.term_guid + "\n"
+        term_msg = "Terminal GUID: " + self.term_guid + "\n"
         if self.worker_guid is None:
             worker_msg = "Worker GUID: unknown (not registered)\n"
         else:
             worker_msg = "Worker GUID: " + self.worker_guid + "\n"
         card_msg = "Card GUID: " + self.card_guid
-        return time_msg + terminal_msg + worker_msg + card_msg
+        return time_msg + term_msg + worker_msg + card_msg
