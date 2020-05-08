@@ -4,7 +4,7 @@ from collections import namedtuple
 
 def read_data(prompt=""):
     """
-    Read data from user vi Command Line Interface (CLI)
+    Read data from user via Command Line Interface (CLI)
     :param prompt: Prompt for input
     """
     return input(prompt)
@@ -18,6 +18,7 @@ def show_msg(msg):
     print(msg)
 
 
+# -------------------------------------------------------------------------------------------------------------------- #
 TERM_GUID_INPUT = "Enter terminal GUID: "
 TERM_NAME_INPUT = "Enter terminal name: "
 CARD_USAGE_REGISTERED = "Saved in database usage of RFID card"
@@ -44,6 +45,7 @@ INCORRECT_DIGIT_INPUT = "Incorrect input - must be digit"
 INCORRECT_LITERALS_INPUT = "Incorrect input - cannot be empty or contain digit"
 TRACKING_ACTIVITY_MENU = "Tracking activity on server. Press 0 to exit"
 
+# -------------------------------------------------------------------------------------------------------------------- #
 ServerMenuTuple = namedtuple('Menu', ['number', 'display_string'])
 
 
@@ -78,7 +80,7 @@ class ServerMenu(Enum):
     @staticmethod
     def show():
         """
-        Show server menu in CLI
+        Show server menu in UI
         """
         print(SEPARATOR)
         for s in ServerMenu:
@@ -86,6 +88,7 @@ class ServerMenu(Enum):
         print(SEPARATOR)
 
 
+# -------------------------------------------------------------------------------------------------------------------- #
 class ServerReportsMenu(Enum):
     @property
     def display_string(self):
@@ -110,7 +113,7 @@ class ServerReportsMenu(Enum):
     @staticmethod
     def show():
         """
-        Show in CLI, server submenu for report generations
+        Show server submenu in UI for report generations
         """
         print(SEPARATOR)
         for s in ServerReportsMenu:

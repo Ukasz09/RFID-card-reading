@@ -1,7 +1,7 @@
 class RegistryLog:
     def __init__(self, time, term_guid, card_guid, worker_guid=None):
         """
-        :param time: time of registered event
+        :param time: Time of registered event
         :param term_guid: GUID of terminal on which event appear
         :param card_guid: GUID of RFID card used in terminal
         :param worker_guid: GUID of worker to which card is assigned
@@ -12,6 +12,9 @@ class RegistryLog:
         self.worker_guid = worker_guid
 
     def __str__(self):
+        """
+        :return: Text representation of RegistryLog object
+        """
         time_msg = "Time: " + self.time + "\n"
         term_msg = "Terminal GUID: " + self.term_guid + "\n"
         if self.worker_guid is None:

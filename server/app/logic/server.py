@@ -2,16 +2,21 @@ from app.logic.terminal import Terminal
 from app.logic.worker import Worker
 from app.logic.registry_log import RegistryLog
 from datetime import datetime
-import app.json_data as json_data
+import app.logic.json_data as json_data
 
 CONFIG_PATH = "data/conf.json"
 
 
+# -------------------------------------------------------------------------------------------------------------------- #
 class DataInputError(BaseException):
     def __init__(self, message):
+        """
+        :param message: Exception message
+        """
         self.message = message
 
 
+# -------------------------------------------------------------------------------------------------------------------- #
 class Server:
     def __init__(self):
         self.__conf_dict = json_data.read(CONFIG_PATH)
@@ -21,6 +26,10 @@ class Server:
 
     @staticmethod
     def read_terminals(path):
+        """
+        :param path: Path to terminals json file
+        :return: Dictionary of with terminals from file
+        """
         result = {}
         for data in json_data.read(path):
             result[data["term_guid"]] = Terminal(data["term_guid"], data["name"])
@@ -28,6 +37,10 @@ class Server:
 
     @staticmethod
     def read_workers(path):
+        """
+        :param path: Path to workers json file
+        :return: Dictionary with workers from file
+        """
         result = {}
         for data in json_data.read(path):
             result[data["worker_guid"]] = Worker(data["name"], data["surname"], data["worker_guid"], data["cards"])
@@ -35,34 +48,57 @@ class Server:
 
     @staticmethod
     def read_logs(path):
+        """
+        :param path: Path to logs json file
+        :return: Dictionary with logs from file
+        """
         result = {}
         for data in json_data.read(path):
             result[data["time"]] = RegistryLog(data["time"], data["term_guid"], data["card_guid"], data["worker_guid"])
         return result
 
     def write_terminals(self):
+        """
+        Write terminals from server object to json file
+        """
         json_data.write(self.__conf_dict["terms_path"], self.__term_dict.values())
 
     def write_workers(self):
+        """
+        Write workers from server object to json file
+        """
         json_data.write(self.__conf_dict["workers_path"], self.__workers_dict.values())
 
     def write_logs(self):
+        """
+        Write logs from server object to json file
+        """
         json_data.write(self.__conf_dict["logs_path"], self.__logs_dict.values())
 
     @staticmethod
-    def write_reports(name, reports_obj):
-        path = "data/" + name + ".json"
-        json_data.write(path, reports_obj)
+    def write_reports(report_name, reports_obj_list):
+        """
+        Write reports to json file
+        :param report_name: Name of report
+        :param reports_obj_list:  List with reports from server
+        """
+        path = "data/" + report_name + ".json"
+        json_data.write(path, reports_obj_list)
 
     @staticmethod
     def write_reports_dict_list(name, list_of_dict):
+        """
+         Write reports to json file
+        :param name: Name of report
+        :param list_of_dict: Reports as dictionary
+        """
         path = "data/" + name + ".json"
         json_data.write_dict_list(path, list_of_dict)
 
     # --------------------------------------------------------------------------------------------------------------- #
     def add_term(self, term_guid, term_name):
         """
-        Add terminal and save it in database
+        If terminal isn't in database then add new terminal
         :param term_guid: GUID of new terminal
         :param term_name: Name assigned to new terminal
         """
@@ -74,8 +110,8 @@ class Server:
 
     def remove_term(self, term_guid):
         """
-        Remove terminal from database
-        :param term_guid:  GUID of terminal to remove
+        If terminal in database then remove terminal
+        :param term_guid: GUID of terminal to remove
         """
         if term_guid in self.__term_dict:
             del self.__term_dict[term_guid]
@@ -85,7 +121,7 @@ class Server:
 
     def add_worker(self, name, surname, worker_guid):
         """
-        Add/register new worker in system and save it database
+        If worker not in database then add/register new worker
         :param name: Name of new worker
         :param surname: Surname of new worker
         :param worker_guid: GUID of new worker
@@ -98,7 +134,7 @@ class Server:
 
     def remove_worker(self, worker_guid):
         """
-        Remove worker from database
+        If worker in database then remove him
         :param worker_guid: GUID of worker to remove
         """
         if worker_guid in self.__workers_dict:
@@ -185,7 +221,7 @@ class Server:
     def any_term_registered(self):
         """
         Check if in database is registered any terminal
-        :return: True - at least one terminal registerd in database, False - otherwise
+        :return: True - at least one terminal registered in database, False - otherwise
         """
         return bool(self.__term_dict)
 
@@ -208,14 +244,26 @@ class Server:
         return self.__term_dict
 
     def get_configs(self):
+        """
+        :return: Configurations dictionary
+        """
         return self.__conf_dict
 
     def terminal_is_engaged(self, term_guid):
+        """
+        :param term_guid: GUID of terminal
+        :return: true - if terminal is engaged or false - otherwise
+        """
         if self.term_is_registered(term_guid):
             return self.__term_dict[term_guid].is_engaged
         return False
 
     def set_terminal_engage(self, term_guid, engaged):
+        """
+        Set engaged value in terminal
+        :param term_guid: GUID of terminal
+        :param engaged: bool value
+        """
         if self.term_is_registered(term_guid):
             self.__term_dict[term_guid].is_engaged = engaged
 
@@ -240,7 +288,7 @@ class Server:
         Generate report with all logs added in given date which relate with worker with given GUID
         :param worker_guid: GUID of worker for whose we generate reports
         :param with_saving: True - save report in database, False - not save report in database
-        :param date: will be returned only logs with date equals <date>
+        :param date: Returned only logs with date equals <date>
         :return: List of <RegistryLog> objects
         """
         logs_from_day = self.report_log_from_day(False, date)
@@ -253,7 +301,7 @@ class Server:
 
     def general_log_for_worker(self, worker_guid):
         """
-         Generate report with all logs which are relate with worker with given GUID
+        Generate report with all logs which are relate with worker with given GUID
         :param worker_guid: GUID of worker for whose we generate reports
         :return: List of <RegistryLog> objects
         """

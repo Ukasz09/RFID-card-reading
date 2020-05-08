@@ -1,6 +1,6 @@
 from datetime import datetime
 from app.logic.server import Server, DataInputError
-import app.cli as ui
+import app.ui.cli as ui
 import paho.mqtt.client as mqtt
 
 TERM_READING_QUERY = "Terminals reading"
@@ -10,32 +10,7 @@ TERM_SELECTED_QUERY = "Terminal selected"
 CARD_READING_QUERY = "Card read"
 
 
-def read_literal(prompt):
-    """
-    Read user input data until it is not empty, not single char and not digit containing value
-    :param prompt: Prompt text used in input
-    :return: Readed literal converted to upper case
-    """
-    literal = ui.read_data(prompt)
-    while any(char.isdigit() for char in literal) or len(literal.strip()) < 2:
-        ui.show_msg(ui.INCORRECT_LITERALS_INPUT)
-        literal = ui.read_data(prompt)
-    return literal.upper()
-
-
-def read_digit(prompt):
-    """
-    Read user input data until it is not empty and correct digit containing value
-    :param prompt: Prompt text used in input
-    :return: Readed digit
-    """
-    digit = ui.read_data(prompt)
-    while not digit.isdigit():
-        ui.show_msg(ui.INCORRECT_DIGIT_INPUT)
-        digit = ui.read_data(prompt)
-    return digit
-
-
+# -------------------------------------------------------------------------------------------------------------------- #
 class ServerController:
     def __init__(self):
         self.server = Server()
@@ -50,13 +25,13 @@ class ServerController:
         self.connect_to_broker()
         while self.__server_active:
             ui.ServerMenu.show()
-            menu_option = self.get_menu_option()
+            menu_option = ServerController.get_menu_option()
             self.open_menu_option(menu_option)
         self.disconnect_from_broker()
 
     def connect_to_broker(self):
         """
-        Connect via MQTT and subscribe `server` topic
+        Establish and setup connection with broker
         """
         config = self.server.get_configs()
         self.__client.tls_set(config["cert_path"])
@@ -68,7 +43,7 @@ class ServerController:
 
     def process_message(self, client, userdata, message):
         """
-        Decode and process message from client (terminals list query, terminal connecting, terminal selected, RFID usage)
+        Decode and process message from terminal
         :param message: message to process
         """
         decoded = (str(message.payload.decode("utf-8"))).split(".")
@@ -86,35 +61,58 @@ class ServerController:
             ui.show_msg("Unknown query")
 
     def term_reading_query(self):
+        """
+        Send on terminal topic list of available terminals
+        """
         self.__client.publish(self.server.get_configs()["term_topic"], self.available_term_query())
 
     def term_connecting_query(self, msg):
+        """
+        If tracking activity is active then show message about connecting new terminal
+        :param msg: message from terminal
+        """
         if self.tracking_activity:
             ui.show_msg(msg)
             ui.show_msg(ui.SEPARATOR)
 
     def term_disconnection_query(self, msg, term_guid):
+        """
+        Show message about disconnecting terminal from server and free terminal
+        :param msg: message from terminal about disconnecting
+        :param term_guid: terminal GUID of message sender
+        """
         if self.tracking_activity:
             ui.show_msg(msg)
             ui.show_msg(ui.SEPARATOR)
         self.server.set_terminal_engage(term_guid, False)
 
     def term_selected_query(self, msg, term_guid):
+        """
+        Make terminal engaged and show message about selected terminal by connected client
+        :param msg: message from terminal about selected terminal
+        :param term_guid: GUID of selected terminal
+        """
         self.server.set_terminal_engage(term_guid, True)
         if self.tracking_activity:
             ui.show_msg(msg + term_guid)
         ui.show_msg(ui.SEPARATOR)
 
     def card_reading_query(self, card_guid, term_guid):
+        """
+        Register RFID card usage and show message about it
+        :param card_guid: GUID of read card
+        :param term_guid: GUID of used terminal
+        """
         card_owner = self.server.register_card_usage(card_guid, term_guid)
         if self.tracking_activity:
-            self.show_card_usage_msg(card_guid, card_owner, term_guid)
+            ServerController.show_card_usage_msg(card_guid, card_owner, term_guid)
 
-    def show_card_usage_msg(self, card_guid, card_owner, terminal_id):
+    @staticmethod
+    def show_card_usage_msg(card_guid, card_owner, terminal_id):
         """
         Show information to console about RFID card usage
         :param card_guid: GUID of RFID card
-        :param card_owner: card owner
+        :param card_owner: card owner of type Worker
         :param terminal_id: used terminal ID
         """
         ui.show_msg(ui.CARD_USAGE_REGISTERED)
@@ -130,7 +128,7 @@ class ServerController:
 
     def available_term_query(self):
         """
-        :return: message with available terminals (only not engaged)
+        :return: Message with available terminals (only not engaged)
         """
         term_msg = ""
         for k in self.server.get_terminals().keys():
@@ -142,24 +140,26 @@ class ServerController:
 
     def disconnect_from_broker(self):
         """
-        Disconnect server from MQTT
+        Disconnect server from broker
         :return:
         """
         self.__client.loop_stop()
         self.__client.disconnect()
 
-    def get_menu_option(self):
+    @staticmethod
+    def get_menu_option():
         """
         Read user input for menu option choose, until given input is digit
-        :return: Number - selected menu number
+        :return: Selected menu number
         """
         user_input = input(ui.CHOOSE_MENU_OPTION)
         while not user_input.isdigit():
-            self.incorrect_option_msg()
+            ServerController.incorrect_option_msg()
             user_input = input(ui.CHOOSE_MENU_OPTION)
-        return float(user_input)
+        return int(user_input)
 
-    def incorrect_option_msg(self):
+    @staticmethod
+    def incorrect_option_msg():
         """
         Show message in CLI, that given menu option in unknown / incorrect
         """
@@ -168,8 +168,8 @@ class ServerController:
 
     def open_menu_option(self, option):
         """
-        choosing correct action in regard to given option
-        :param option: selected menu option
+        Choosing server action in regard to given option by user
+        :param option: Selected menu option
         """
         if option == ui.ServerMenu.add_terminal.number:
             self.show_add_terminal_ui()
@@ -199,11 +199,37 @@ class ServerController:
             self.incorrect_option_msg()
         ui.read_data(ui.WAIT_FOR_INPUT)
 
+    @staticmethod
+    def read_literal(prompt):
+        """
+        Read user input data until is not empty and not single char and literal is not digit
+        :param prompt: Prompt text used in input
+        :return: Literal converted to upper case
+        """
+        literal = ui.read_data(prompt)
+        while any(char.isdigit() for char in literal) or len(literal.strip()) < 2:
+            ui.show_msg(ui.INCORRECT_LITERALS_INPUT)
+            literal = ui.read_data(prompt)
+        return literal.upper()
+
+    @staticmethod
+    def read_digit(prompt):
+        """
+        Read user input data until it is not empty and literal is digit
+        :param prompt: Prompt text used in input
+        :return: Digit literal
+        """
+        digit = ui.read_data(prompt)
+        while not digit.isdigit():
+            ui.show_msg(ui.INCORRECT_DIGIT_INPUT)
+            digit = ui.read_data(prompt)
+        return digit
+
     def show_add_terminal_ui(self):
         """
-        Show UI and take action for adding new terminal to database
+        Show UI for adding new terminal. If parameters from user are correct then add new terminal to database
         """
-        term_guid = read_digit(ui.TERM_GUID_INPUT)
+        term_guid = ServerController.read_digit(ui.TERM_GUID_INPUT)
         term_name = ui.read_data(ui.TERM_NAME_INPUT)
         try:
             self.server.add_term(term_guid, term_name)
@@ -214,7 +240,7 @@ class ServerController:
 
     def show_remove_terminal_ui(self):
         """
-        Show UI and take action for removing terminal from database
+        Show UI for removing terminal. If parameters from user are correct then remove terminal from database
         """
         term_guid = ui.read_data(ui.TERM_GUID_INPUT)
         try:
@@ -226,11 +252,11 @@ class ServerController:
 
     def show_add_worker_ui(self):
         """
-        Show UI and take action for adding new worker to database
+        Show UI for adding new worker. If parameters from user are correct then add new worker to database
         """
-        worker_guid = read_digit(ui.WORKER_ID_INPUT)
-        worker_name = read_literal(ui.WORKER_NAME_INPUT)
-        worker_surname = read_literal(ui.WORKER_SURNAME_INPUT)
+        worker_guid = ServerController.read_digit(ui.WORKER_ID_INPUT)
+        worker_name = ServerController.read_literal(ui.WORKER_NAME_INPUT)
+        worker_surname = ServerController.read_literal(ui.WORKER_SURNAME_INPUT)
 
         try:
             self.server.add_worker(worker_name, worker_surname, worker_guid)
@@ -241,7 +267,7 @@ class ServerController:
 
     def show_remove_worker_ui(self):
         """
-        Show UI and take action for removing worker from database
+        Show UI for removing worker. If parameters from user are correct then remove worker from database
         """
         worker_id = ui.read_data(ui.WORKER_ID_INPUT)
         try:
@@ -253,10 +279,10 @@ class ServerController:
 
     def show_assign_card_ui(self):
         """
-        Show UI and take action for assigning new RFID card to worker
+        Show UI for card assigning. Assign new RFID card to worker
         """
         worker_guid = ui.read_data(ui.WORKER_ID_INPUT)
-        card_guid = read_digit(ui.CARD_ID_INPUT)
+        card_guid = ServerController.read_digit(ui.CARD_ID_INPUT)
         try:
             self.server.assign_card(card_guid, worker_guid)
         except DataInputError as err:
@@ -266,7 +292,7 @@ class ServerController:
 
     def show_unassign_card_ui(self):
         """
-        Show UI and take action for unassigning card from worker
+        Show UI for unassigning card from worker. If parameters from user are correct then unassign card from worker
         """
         term_id = ui.read_data(ui.CARD_ID_INPUT)
         try:
@@ -276,14 +302,15 @@ class ServerController:
         else:
             ui.show_msg(ui.REMOVED_CARD + worker_id)
 
-    def show_data(self, list):
+    @staticmethod
+    def show_data(list_to_show):
         """
         Print every element from given arr, separated with text separator from CLI
-        :param list: List of elements to show
+        :param list_to_show: List of elements to show
         """
         ui.show_msg(ui.SEPARATOR)
-        if list.__len__() > 0:
-            for element in list:
+        if list_to_show.__len__() > 0:
+            for element in list_to_show:
                 ui.show_msg(element.__str__())
                 ui.show_msg(ui.SEPARATOR)
         else:
@@ -295,7 +322,7 @@ class ServerController:
         Show submenu and take action for selected report type
         """
         ui.ServerReportsMenu.show()
-        option = self.get_menu_option()
+        option = ServerController.get_menu_option()
         if option == ui.ServerReportsMenu.report_log_from_day.number:
             self.log_from_day()
         elif option == ui.ServerReportsMenu.report_log_from_day_worker.number:
@@ -310,12 +337,18 @@ class ServerController:
             self.incorrect_option_msg()
 
     def log_from_day(self):
+        """
+        Take day from user. Generate logs report for given day and show generated data in UI
+        """
         date = self.read_player_date_input()
         if date is not None:
             generated_data = self.server.report_log_from_day(True, date)
             self.show_data(generated_data)
 
     def log_from_day_for_worker(self):
+        """
+        Take day and worker GUID from user. Generate logs report for given day and worker GUID. Show generated data in UI
+        """
         worker_id = ui.read_data(ui.WORKER_ID_INPUT)
         date = self.read_player_date_input()
         if date is not None:
@@ -323,6 +356,10 @@ class ServerController:
             self.show_data(generated_data)
 
     def work_time_from_day_for_worker(self):
+        """
+        Take day and worker GUID from user. Generate work time report from given day and worker GUI.
+        Show generated data in UI
+        """
         worker_id = ui.read_data(ui.WORKER_ID_INPUT)
         date = self.read_player_date_input()
         if date is not None:
@@ -332,6 +369,9 @@ class ServerController:
             ui.show_msg(ui.SEPARATOR)
 
     def work_time_from_day(self):
+        """
+        Take day from user. Show work time report for given day for all workers
+        """
         date = self.read_player_date_input()
         if date is not None:
             generated_data = self.server.report_work_time_from_day(True, date)
@@ -349,9 +389,10 @@ class ServerController:
             user_input = input()
         self.tracking_activity = False
 
-    def show_worker_with_time_report(self, tuple_list):
+    @staticmethod
+    def show_worker_with_time_report(tuple_list):
         """
-        Show in CLI data from generated report
+        Show in UI data from generated report
         :param tuple_list: Data saved in tuples (worked GUID, work time) in list
         """
         ui.show_msg(ui.SEPARATOR)
@@ -359,9 +400,10 @@ class ServerController:
             ui.show_msg("Worker GUID: " + tup[0] + " Work time: " + tup[1].__str__())
             ui.show_msg(ui.SEPARATOR)
 
-    def read_player_date_input(self):
+    @staticmethod
+    def read_player_date_input():
         """
-        Read player data input. If incorrect value or format show message about it in CLI
+        Read player data input. If incorrect value or format then show message about it in UI
         :return: Readed date <datatime> or None if give incorrect
         """
         date_str = ui.read_data(ui.DATE_INPUT)

@@ -12,6 +12,7 @@ CARD_READING_QUERY = "Card read"
 CONFIG_PATH = "config/conf.json"
 
 
+# -------------------------------------------------------------------------------------------------------------------- #
 class ClientController:
     def __init__(self):
         self.__client_active = True
@@ -23,6 +24,11 @@ class ClientController:
 
     @staticmethod
     def read(path):
+        """
+        Read content of file
+        :param path:  Path of file
+        :return: Content of json file
+        """
         with open(path, "r") as f:
             content = f.read()
         return json.loads(content)
@@ -63,7 +69,7 @@ class ClientController:
     def process_message(self, client, userdata, message):
         """
         Decode and process message from server (reading available terminals list)
-        :param message: message to process
+        :param message: Message to process
         """
         # Getting terminal
         if self.__not_logged:
@@ -105,7 +111,7 @@ class ClientController:
 
     def check_any_terminal_registered(self):
         """
-        Check if at least one terminal is added in database. If not exit program
+        Check if at least one terminal is added in database. If not then exit program
         :return: True - at least one terminal is added in database, False - otherwise
         """
         if len(self.__term_list) == 0:
@@ -115,7 +121,7 @@ class ClientController:
 
     def choose_terminal(self):
         """
-        Readed terminal GUID until not find it in database
+        Read terminal GUID until not find it in database
         :return: Terminal from database with given GUID from user input
         """
         ui.show_data(ui.TERMINALS_MENU)
@@ -131,7 +137,7 @@ class ClientController:
     def register_card_usage(self, card_guid):
         """
         Send query to server about card usage
-        :param card_guid:
+        :param card_guid: used card GUID
         """
         ui.show_data(ui.CARD_SCANNED)
         self.query_card_usage(card_guid, self.__term_guid)
@@ -139,15 +145,15 @@ class ClientController:
     def query_card_usage(self, card_guid, terminal_guid):
         """
         Send message to server about detected RFID card usage
-        :param card_guid: RFID card guid
-        :param terminal_guid: terminal ID
+        :param card_guid: used RFID card GUID
+        :param terminal_guid: used terminal ID
         """
         self.__client.publish(self.config["server_topic"], CARD_READING_QUERY + "." + card_guid + "." + terminal_guid)
 
     def scan_card(self):
         """
         Scan and return card GUID - temporary mocked to read RFID card code from user console
-        :return: card GUID
+        :return: used card GUID
         """
         prompt = "Temporary mocked - put card id from keyboard or nothing to exit: "
         user_input = ui.read_data(prompt)
