@@ -1,12 +1,10 @@
-from app.database_connection.local_database import LocalDatabase
 from app.logic.terminal import Terminal
 from app.logic.worker import Worker
 from app.logic.registry_log import RegistryLog
 from datetime import datetime
+import app.json_data as json_data
 
-terminal_json = "data/terminals.json"
-workers_json = "data/workers.json"
-logs_json = "data/registrations.json"
+CONFIG_PATH = "data/conf.json"
 
 
 class DataInputError(BaseException):
@@ -16,10 +14,31 @@ class DataInputError(BaseException):
 
 class Server:
     def __init__(self):
-        self.__database = LocalDatabase(terminal_json, workers_json, logs_json)
-        self.__terminals_dict = self.__database.read_terminals()
-        self.__workers_dict = self.__database.read_workers()
-        self.__logs_dict = self.__database.read_logs()
+        self.__conf_dict = json_data.read(CONFIG_PATH)
+        self.__term_dict = Server.read_terminals(self.__conf_dict["terms_path"])
+        self.__workers_dict = Server.read_workers(self.__conf_dict["workers_path"])
+        self.__logs_dict = Server.read_logs(self.__conf_dict["logs_path"])
+
+    @staticmethod
+    def read_terminals(path):
+        result = {}
+        for data in json_data.read(path):
+            result[data["term_guid"]] = Terminal(data["term_guid"], data["name"])
+        return result
+
+    @staticmethod
+    def read_workers(path):
+        result = {}
+        for data in json_data.read(path):
+            result[data["worker_guid"]] = Worker(data["name"], data["surname"], data["cards"])
+        return result
+
+    @staticmethod
+    def read_logs(path):
+        result = {}
+        for data in json_data.read(path):
+            result[data["time"]] = RegistryLog(data["time"], data["term_guid"], data["card_guid"], data["worker_guid"])
+        return result
 
     def add_terminal(self, term_guid, term_name):
         """

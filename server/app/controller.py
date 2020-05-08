@@ -62,7 +62,9 @@ class ServerController:
         """
         Connect via MQTT and subscribe `server` topic
         """
-        self.__client.connect(self.__broker_address)
+        self.__client.tls_set("ca.crt")  # todo pozmieniac na wczytywane z configu
+        self.__client.username_pw_set(username='client', password='password')  # todo pozmieniac na wczytywane z configu
+        self.__client.connect(self.__broker_address, 8883)
         self.__client.on_message = self.process_message
         self.__client.subscribe(SERVER_TOPIC)
         self.__client.loop_start()

@@ -1,0 +1,12 @@
+{
+  "broker": "ukasz09-os",
+  "port": 8883,
+  "cert_path": "ca.crt",
+  "terms_path": "data/terminals.json",
+  "workers_path": "data/workers.json",
+  "logs_path": "data/logs.json",
+  "term_topic": "app/terminal",
+  "server_topic": "app/server",
+  "username": "server",
+  "password": "admin"
+}
