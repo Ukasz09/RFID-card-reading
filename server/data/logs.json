@@ -484,5 +484,35 @@
     "term_guid": "123414",
     "card_guid": "12",
     "worker_guid": null
+  },
+  {
+    "time": "2020-05-09 08:39:34.308578",
+    "term_guid": "123414",
+    "card_guid": "352",
+    "worker_guid": null
+  },
+  {
+    "time": "2020-05-09 08:39:37.409811",
+    "term_guid": "98765678",
+    "card_guid": "241",
+    "worker_guid": null
+  },
+  {
+    "time": "2020-05-09 08:39:39.896468",
+    "term_guid": "123414",
+    "card_guid": "421",
+    "worker_guid": null
+  },
+  {
+    "time": "2020-05-09 08:39:47.097458",
+    "term_guid": "98765678",
+    "card_guid": "11",
+    "worker_guid": null
+  },
+  {
+    "time": "2020-05-09 08:39:53.035529",
+    "term_guid": "98765678",
+    "card_guid": "43",
+    "worker_guid": null
   }
 ]
