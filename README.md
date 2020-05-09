@@ -1,5 +1,4 @@
-﻿# RFID Card Reading [![License](https://img.shields.io/badge/licence-MIT-blue)](https://choosealicense.com/licenses/mit/) [![![Status](https://img.shields.io/badge/status-finished-brightgreen)](https://github.com/Ukasz09/RFID-card-reading)
-
+﻿# RFID Card Reading [![License](https://img.shields.io/badge/licence-MIT-blue)](https://choosealicense.com/licenses/mit/) [![Status](https://img.shields.io/badge/status-finished-brightgreen)](https://github.com/Ukasz09/RFID-card-reading)
  
 RFID card reading application for Client and Server. Client application simulate terminal which can read RFID cards (temporary mocked, target by rasberryPi with RFID card reader). Server application - allow to control data in database and generate various reports
 <br/>
