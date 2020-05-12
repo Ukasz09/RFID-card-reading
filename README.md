@@ -11,6 +11,7 @@ RFID card reading application for Client and Server. Client application simulate
 
 
 ![use_case](https://raw.githubusercontent.com/Ukasz09/RFID-card-reading/master/screenshots/use_case.png)
+![use_case](https://raw.githubusercontent.com/Ukasz09/RFID-card-reading/master/screenshots/class_diagram.png)
 
 ## Screenshots 
 
@@ -24,7 +25,29 @@ For more: see `screenshots` directories
 ```bash
 pip install -r requirements.txt --user
 ```
+2. Generate certificates and keys:
+   Generate pair of keys: <br/>
+	`openssl genrsa -des3 -out ca.key 2048`
+   Make certificate: <br/>
+	`openssl req -new -x509 -days 1826 -key ca.key -out ca.crt`
+   Make another pair of keys: <br/>
+	`openssl genrsa -out server.key 2048`
+	Sign certificate: <br/>
+	`openssl req -new -out server.csr -key server.key`
+	Verify certificate <br/>
+	`openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days 360`
 
+3.	Make password file (in your mosquitto installation folder, e.g. `/etc/mosquitto/`): 
+	`mosquitto_passwd -c passwd.conf server` 
+4.  Modify mosquitto.conf file. Append this lines to it: 
+	```bash
+	allow_anonymous false
+	password_file //path to passwd.conf which you had made in section 3//
+	port 8883
+	cafile //path to ca.crt which you had made in section 2//
+	certfile //path to server.crt which you had made in section 2//
+	keyfile //path to server.key which you had made in section 2//
+	```
 2. Navigate do client or server directory
 3. Run script
 
