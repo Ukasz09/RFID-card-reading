@@ -26,17 +26,17 @@ pip install -r requirements.txt --user
 ```
 2. Generate certificates and keys:
    Generate pair of keys: <br/>
-	`openssl genrsa -des3 -out ca.key 2048`
+	`openssl genrsa -des3 -out ca.key 2048` <br/>
    Make certificate: <br/>
-	`openssl req -new -x509 -days 1826 -key ca.key -out ca.crt`
+	`openssl req -new -x509 -days 1826 -key ca.key -out ca.crt` <br/>
    Make another pair of keys: <br/>
-	`openssl genrsa -out server.key 2048`
+	`openssl genrsa -out server.key 2048` <br/>
 	Sign certificate: <br/>
-	`openssl req -new -out server.csr -key server.key`
+	`openssl req -new -out server.csr -key server.key` <br/>
 	Verify certificate <br/>
-	`openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days 360`
+	`openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days 360` <br/>
 
-3.	Make password file (in your mosquitto installation folder, e.g. `/etc/mosquitto/`): 
+3.	Make password file (in your mosquitto installation folder, e.g. `/etc/mosquitto/`): <br/>
 	`mosquitto_passwd -c passwd.conf server` 
 4.  Modify mosquitto.conf file. Append this lines to it: 
 	```bash
